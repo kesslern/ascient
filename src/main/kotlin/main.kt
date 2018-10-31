@@ -11,7 +11,7 @@ import io.ktor.server.netty.Netty
 fun main(args: Array<String>) {
     embeddedServer(Netty, 8080) {
         routing {
-            get("/") {
+            get("/api/test") {
                 call.respondText("My Example Blog 4", ContentType.Text.Html)
             }
         }
