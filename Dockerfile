@@ -9,4 +9,4 @@ COPY . /app
 
 EXPOSE 8080
 
-CMD ["./gradlew", "run"]
+CMD ["bash", "-c", "./gradlew run -Ddatabase.connection=${DB_CONNECTION}"]

@@ -20,9 +20,10 @@ object booleans : Table() {
 }
 
 fun main(args: Array<String>) {
+    val databaseConnection = System.getProperty("database.connection")
 
     Database.connect(
-            "jdbc:postgresql://localhost:5432/postgres?user=user&password=pass",
+            databaseConnection,
             driver = "org.postgresql.Driver")
 
     embeddedServer(Netty, 8080) {
