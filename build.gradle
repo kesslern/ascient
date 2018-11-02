@@ -56,3 +56,13 @@ def databaseConnection =
                 'jdbc:postgresql://localhost:5432/postgres?user=user&password=pass')
 
 applicationDefaultJvmArgs = ["-Ddatabase.connection=${databaseConnection}"]
+
+jar {
+    archiveName = 'ascient.jar'
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
