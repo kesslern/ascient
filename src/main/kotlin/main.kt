@@ -1,7 +1,11 @@
 package us.kesslern.ascient
 
 import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
+import io.ktor.jackson.jackson
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
@@ -19,6 +23,12 @@ object booleans : Table() {
     val value: Column<Boolean> = bool("value")
 }
 
+class Test(
+        val val1: String,
+        val val2: Int,
+        val val3: Boolean
+)
+
 fun main(args: Array<String>) {
     val databaseConnection = System.getProperty("database.connection")
 
@@ -27,6 +37,9 @@ fun main(args: Array<String>) {
             driver = "org.postgresql.Driver")
 
     embeddedServer(Netty, 8080) {
+        install(ContentNegotiation) {
+            jackson {}
+        }
         routing {
             get("/api/test") {
 
@@ -38,7 +51,7 @@ fun main(args: Array<String>) {
                 }
 
                 if (result != null) {
-                    call.respondText("It was ${result}", ContentType.Text.Html)
+                    call.respond(Test("It was...", 123, result!!))
                 } else {
                     call.respondText("no bro", ContentType.Text.Html)
                 }
