@@ -12,10 +12,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object booleans : Table() {
@@ -65,6 +62,21 @@ fun main(args: Array<String>) {
                     call.respond(Test("It was...", 123, result!!))
                 } else {
                     call.respondText("no bro", ContentType.Text.Html)
+                }
+            }
+            get("/api/booleans") {
+                val bools = transaction {
+                    booleans.selectAll().map { it -> it}
+                }
+
+                call.respond(bools)
+            }
+            get("/api/booleans/new") {
+                transaction {
+                    booleans.insert {
+                        it[name] = call.request.queryParameters["name"] ?: throw IllegalArgumentException()
+                        it[value] = true
+                    }
                 }
             }
         }
