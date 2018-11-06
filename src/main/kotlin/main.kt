@@ -11,6 +11,7 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Table
@@ -23,6 +24,10 @@ object booleans : Table() {
     val value: Column<Boolean> = bool("value")
 }
 
+val databaseConnection: String = System.getProperty("database.connection")
+val databaseUsername: String = System.getProperty("database.username")
+val databasePassword: String = System.getProperty("database.password")
+
 class Test(
         val val1: String,
         val val2: Int,
@@ -30,11 +35,17 @@ class Test(
 )
 
 fun main(args: Array<String>) {
-    val databaseConnection = System.getProperty("database.connection")
+    Flyway
+            .configure()
+            .dataSource(databaseConnection, databaseUsername, databasePassword)
+            .load()
+            .migrate()
 
     Database.connect(
             databaseConnection,
-            driver = "org.postgresql.Driver")
+            driver = "org.postgresql.Driver",
+            user =  databaseUsername,
+            password = databasePassword)
 
     embeddedServer(Netty, 8080) {
         install(ContentNegotiation) {

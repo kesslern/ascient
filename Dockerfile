@@ -15,4 +15,4 @@ COPY --from=builder /app/build/libs/ascient.jar /app
 
 EXPOSE 8080
 
-CMD ["bash", "-c", "java -Ddatabase.connection=${DB_CONNECTION} -jar /app/ascient.jar"]
+CMD ["bash", "-c", "java -Ddatabase.connection=${DB_CONNECTION} -Ddatabase.username=${DB_USERNAME} -Ddatabase.password=${DB_PASSWORD} -jar /app/ascient.jar"]

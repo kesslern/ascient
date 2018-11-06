@@ -5,6 +5,7 @@ version '1.0-SNAPSHOT'
 buildscript {
     ext.versions = [
             exposed : '0.11.2',
+            flyway  : '5.2.1',
             kotlin  : '1.3.0',
             ktor    : '1.0.0-beta-3',
             jvm     :  1.8,
@@ -40,6 +41,7 @@ repositories {
 }
 
 dependencies {
+    compile "org.flywaydb:flyway-core:$versions.flyway"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
     compile "io.ktor:ktor-server-netty:$versions.ktor"
     compile "org.jetbrains.exposed:exposed:$versions.exposed"
@@ -54,9 +56,17 @@ mainClassName = 'us.kesslern.ascient.MainKt'
 def databaseConnection =
         System.getProperty(
                 'database.connection',
-                'jdbc:postgresql://localhost:5432/postgres?user=user&password=pass')
+                'jdbc:postgresql://localhost:5432/postgres')
 
-applicationDefaultJvmArgs = ["-Ddatabase.connection=${databaseConnection}"]
+def databaseUsername = System.getProperty('database.username', 'user')
+def databasePassword = System.getProperty('database.password', 'pass')
+
+applicationDefaultJvmArgs = [
+        "-Ddatabase.connection=${databaseConnection}",
+        "-Ddatabase.username=${databaseUsername}",
+        "-Ddatabase.password=${databasePassword}"
+
+]
 
 jar {
     archiveName = 'ascient.jar'
