@@ -19,6 +19,10 @@ object Booleans : Table("booleans") {
     val value: Column<Boolean> = bool("value")
 }
 
+object StatusOk {
+    val status: String = "OK"
+}
+
 data class AscientBoolean(
         val id: Int,
         val name: String,
@@ -31,7 +35,6 @@ val databasePassword: String = System.getProperty("database.password")
 
 class Test(
         val val1: String,
-        val val2: Int,
         val val3: Boolean?
 )
 
@@ -45,7 +48,7 @@ fun main(args: Array<String>) {
     Database.connect(
             databaseConnection,
             driver = "org.postgresql.Driver",
-            user =  databaseUsername,
+            user = databaseUsername,
             password = databasePassword)
 
     embeddedServer(Netty, 8080) {
@@ -54,27 +57,31 @@ fun main(args: Array<String>) {
 
         routing {
             get("/api/test") {
-
-                val boolean = transaction rs@{
-                    Booleans.select {
-                        Booleans.name eq "test"
-                    }.firstOrNull()?.get(Booleans.value)
-                }
-
-                call.respond(Test("It was...", 123, boolean))
-
+                call.respond(
+                        Test("It was...",
+                                transaction {
+                                    Booleans.select {
+                                        Booleans.name eq "test"
+                                    }.firstOrNull()?.get(Booleans.value)
+                                }
+                        )
+                )
             }
+
             get("/api/booleans") {
-                val booleans: List<AscientBoolean> = transaction {
-                    Booleans.selectAll().map{ it -> AscientBoolean(
-                            it[Booleans.id],
-                            it[Booleans.name],
-                            it[Booleans.value]
-                    ) }
-                }
-
-                call.respond(booleans)
+                call.respond(
+                        transaction {
+                            Booleans.selectAll().map { it ->
+                                AscientBoolean(
+                                        it[Booleans.id],
+                                        it[Booleans.name],
+                                        it[Booleans.value]
+                                )
+                            }
+                        }
+                )
             }
+
             get("/api/booleans/create") {
                 transaction {
                     Booleans.insert {
@@ -82,10 +89,12 @@ fun main(args: Array<String>) {
                         it[value] = true
                     }
                 }
-                call.respond("Success")
+
+                call.respond(StatusOk)
             }
+
             get("/api/booleans/update") {
-                val name = call.request.queryParameters["name"]  ?: throw IllegalArgumentException()
+                val name = call.request.queryParameters["name"] ?: throw IllegalArgumentException()
                 val newValue = when (call.request.queryParameters["value"]) {
                     "true" -> true
                     "false" -> false
@@ -93,21 +102,22 @@ fun main(args: Array<String>) {
                 }
 
                 transaction {
-                    Booleans.update({ Booleans.name eq name }) {
+                    Booleans.update({ Booleans.name eq name }) { it ->
                         it[value] = newValue
                     }
                 }
-                call.respond("Success")
+
+                call.respond(StatusOk)
             }
+
             get("/api/booleans/delete") {
-                val name = call.request.queryParameters["name"]  ?: throw IllegalArgumentException()
+                val name = call.request.queryParameters["name"] ?: throw IllegalArgumentException()
 
                 transaction {
-                    Booleans.deleteWhere {
-                        Booleans.name eq name
-                    }
+                    Booleans.deleteWhere { Booleans.name eq name }
                 }
-                call.respond("Success")
+
+                call.respond(StatusOk)
             }
         }
     }.start(wait = true)
