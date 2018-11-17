@@ -19,14 +19,8 @@ object StatusOk {
 val databaseConnection: String = System.getProperty("database.connection")
 val databaseUsername: String = System.getProperty("database.username")
 val databasePassword: String = System.getProperty("database.password")
-val useH2: Boolean = System.getProperty("database.h2")?.toBoolean() ?: false
 
-class Test(
-        val val1: String,
-        val val3: Boolean?
-)
-
-fun Application.main() {
+fun main() {
     Flyway
             .configure()
             .dataSource(databaseConnection, databaseUsername, databasePassword)
