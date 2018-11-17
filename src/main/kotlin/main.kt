@@ -52,6 +52,11 @@ fun Application.server() {
             call.respond(AscientBooleans.get())
         }
 
+        get("/api/booleans/{id}") {
+            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException()
+            call.respond(AscientBooleans.get(id))
+        }
+
         post("/api/booleans") {
             val newName = call.request.queryParameters["name"] ?: throw IllegalArgumentException()
             val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw IllegalArgumentException()

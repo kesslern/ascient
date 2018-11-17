@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object Booleans : Table("booleans") {
     val id: Column<Int> = integer("id").autoIncrement().primaryKey()
-    val name: Column<String> = varchar("name", 25)
+    val name: Column<String> = varchar("name", 36)
     val value: Column<Boolean> = bool("value")
 }
 
@@ -21,6 +21,17 @@ object AscientBooleans {
                 }
             }
 
+    fun get(id: Int): AscientBoolean =
+        transaction {
+            Booleans.select {Booleans.id eq id}.map { it ->
+                AscientBoolean(
+                    it[Booleans.id],
+                    it[Booleans.name],
+                    it[Booleans.value]
+                )
+            }.first()
+        }
+
     fun insert(newName: String, newValue: Boolean): Int =
             transaction {
                 Booleans.insert {
@@ -30,8 +41,10 @@ object AscientBooleans {
             }
 
     fun update(id: Int, newValue: Boolean) {
-        Booleans.update({ Booleans.id eq id }) {
-            it[value] = newValue
+        transaction {
+            Booleans.update({ Booleans.id eq id }) {
+                it[value] = newValue
+            }
         }
     }
 
