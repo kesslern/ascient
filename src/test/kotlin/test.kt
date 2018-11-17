@@ -13,12 +13,11 @@ import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference
 import us.kesslern.ascient.AscientBoolean
-import us.kesslern.ascient.Booleans
 import us.kesslern.ascient.server
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
@@ -26,15 +25,21 @@ class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AscientTests {
 
+    private val logger = LoggerFactory.getLogger(AscientTests::class.java)
+    private val mapper = ObjectMapper().registerModule(KotlinModule())
+
+    private val databaseDriver = "org.postgresql.Driver"
+    private val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
+
     init {
         logger.info("Starting...")
         KPostgreSQLContainer().start()
         Flyway
                 .configure()
-                .dataSource("jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true", "", "")
+                .dataSource(databaseConnection, "", "")
                 .load()
                 .migrate()
-        Database.connect("jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true", "org.postgresql.Driver", "", "")
+        Database.connect(databaseConnection, databaseDriver)
     }
 
     @Test
@@ -42,28 +47,32 @@ class AscientTests {
         withTestApplication(Application::server) {
             // insert new boolean with random UUID as name and record the new ID
             val name = UUID.randomUUID()
-            val newId: Int = with(handleRequest(
+            val newId = with(handleRequest(
                 HttpMethod.Post,
-                "/api/booleans?name=${name}&value=${true}")) {
+                "/api/booleans?name=$name&value=${true}")) {
                 assertEquals(HttpStatusCode.OK, response.status())
-                response.content?.toInt() ?: throw RuntimeException("Response was not convertible to Int")
+                val content = response.content
+                assertNotNull(content)
+                content.toInt()
             }
 
             // verify boolean inserted with value and ID
-            with(handleRequest(HttpMethod.Get, "/api/booleans/${newId}")) {
+            with(handleRequest(HttpMethod.Get, "/api/booleans/$newId")) {
                 val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals(true, newBoolean.value)
             }
 
             // change value to false
-            with(handleRequest(HttpMethod.Put, "/api/booleans/${newId}?value=${false}")) {
-                assertEquals(HttpStatusCode.OK, response.status())
+            with(handleRequest(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
+                assertEquals(HttpStatusCode.NoContent, response.status())
             }
 
             // get all values and verify
             with(handleRequest(HttpMethod.Get, "/api/booleans")) {
-                val newBooleans: List<AscientBoolean> = mapper.readValue(response.content ?: throw RuntimeException())
+                val content = response.content
+                assertNotNull(content)
+                val newBooleans: List<AscientBoolean> = mapper.readValue(content)
                 assertEquals(HttpStatusCode.OK, response.status())
                 val newValue = newBooleans.find { it.id == newId }?.value
                 assertEquals(false, newValue)
@@ -71,7 +80,7 @@ class AscientTests {
 
             // delete
             with(handleRequest(HttpMethod.Delete, "/api/booleans/${newId}")) {
-                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals(HttpStatusCode.NoContent, response.status())
             }
 
             // get all values and verify
@@ -81,10 +90,5 @@ class AscientTests {
                 assertEquals(null, newBooleans.find { it.id == newId })
             }
         }
-    }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(AscientTests::class.java)
-        private val mapper = ObjectMapper().registerModule(KotlinModule())
     }
 }
