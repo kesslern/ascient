@@ -91,4 +91,13 @@ class AscientTests {
             }
         }
     }
+
+    @Test
+    fun `test bad parameters`() {
+        withTestApplication(Application::server) {
+            with(handleRequest(HttpMethod.Get, "/api/booleans/9999999")) {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+        }
+    }
 }

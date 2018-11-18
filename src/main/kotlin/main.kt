@@ -4,6 +4,7 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -30,13 +31,25 @@ fun main() {
             user = databaseUsername,
             password = databasePassword)
 
-    embeddedServer(Netty, 8080) {
+    embeddedServer(
+        Netty,
+        port = 8080) {
         server()
     }.start(wait = true)
 }
 
 fun Application.server() {
     install(ContentNegotiation) { jackson {} }
+
+    install(StatusPages) {
+        exception<MissingParam> {
+            call.respond(HttpStatusCode.BadRequest, it.message ?: "")
+        }
+
+        exception<IllegalArgumentException> {
+            call.respond(HttpStatusCode.BadRequest, it.message ?: "")
+        }
+    }
 
     routing {
         get("/api/booleans") {
@@ -45,7 +58,11 @@ fun Application.server() {
 
         get("/api/booleans/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            call.respond(AscientBooleans.get(id))
+            try {
+                call.respond(AscientBooleans.get(id))
+            } catch (e: NoSuchElementException) {
+                throw IllegalArgumentException("Cannot locate boolean with ID $id")
+            }
         }
 
         post("/api/booleans") {
