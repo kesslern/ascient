@@ -14,11 +14,12 @@ import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 
-val databaseConnection: String = System.getProperty("database.connection")
-val databaseUsername: String = System.getProperty("database.username")
-val databasePassword: String = System.getProperty("database.password")
 
 fun main() {
+    val databaseConnection: String = System.getProperty("database.connection")
+    val databaseUsername: String = System.getProperty("database.username")
+    val databasePassword: String = System.getProperty("database.password")
+
     Flyway
             .configure()
             .dataSource(databaseConnection, databaseUsername, databasePassword)
@@ -67,7 +68,7 @@ fun Application.server() {
 
         post("/api/booleans") {
             val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
-            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
             val id = AscientBooleans.insert(newName, newValue)
 

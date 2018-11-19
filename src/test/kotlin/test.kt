@@ -9,6 +9,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import org.slf4j.LoggerFactory
@@ -85,9 +86,27 @@ class AscientTests {
 
             // get all values and verify
             with(handleRequest(HttpMethod.Get, "/api/booleans")) {
-                val newBooleans: List<AscientBoolean> = ObjectMapper().readValue(response.content ?: throw RuntimeException())
+                val newBooleans: List<AscientBoolean> = mapper.readValue(response.content ?: throw RuntimeException())
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals(null, newBooleans.find { it.id == newId })
+            }
+        }
+    }
+
+    @Test
+    fun `test default parameters`() {
+        withTestApplication(Application::server) {
+            // POST without a value
+            val id = with(handleRequest(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
+                assertEquals(HttpStatusCode.OK, response.status())
+                response.content?.toInt()
+            }
+
+            // Verify inserted with value True
+            with(handleRequest(HttpMethod.Get, "/api/booleans/$id")) {
+                val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals(true, newBoolean.value)
             }
         }
     }
@@ -96,6 +115,25 @@ class AscientTests {
     fun `test bad parameters`() {
         withTestApplication(Application::server) {
             with(handleRequest(HttpMethod.Get, "/api/booleans/9999999")) {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+
+            with(handleRequest(HttpMethod.Get, "/api/booleans/-1")) {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+
+            with(handleRequest(HttpMethod.Post, "/api/booleans")) {
+                assertEquals("Missing parameter: name", response.content)
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+
+
+            val id = with(handleRequest(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
+                assertEquals(HttpStatusCode.OK, response.status())
+                response.content?.toInt()
+            }
+            with(handleRequest(HttpMethod.Put, "/api/booleans/$id")) {
+                assertEquals("Missing parameter: value", response.content)
                 assertEquals(HttpStatusCode.BadRequest, response.status())
             }
         }
