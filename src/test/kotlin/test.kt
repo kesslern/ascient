@@ -5,8 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.Application
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.*
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.junit.Ignore
@@ -45,97 +44,99 @@ class AscientTests {
 
     @Test
     fun `test boolean CRUD operations`() {
-        withTestApplication(Application::server) {
-            // insert new boolean with random UUID as name and record the new ID
-            val name = UUID.randomUUID()
-            val newId = with(handleRequest(
-                HttpMethod.Post,
-                "/api/booleans?name=$name&value=${true}")) {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val content = response.content
-                assertNotNull(content)
-                content.toInt()
-            }
+        // insert new boolean with random UUID as name and record the new ID
+        val name = UUID.randomUUID()
+        val newId = with(request(
+            HttpMethod.Post,
+            "/api/booleans?name=$name&value=${true}")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val content = response.content
+            assertNotNull(content)
+            content.toInt()
+        }
 
-            // verify boolean inserted with value and ID
-            with(handleRequest(HttpMethod.Get, "/api/booleans/$newId")) {
-                val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(true, newBoolean.value)
-            }
+        // verify boolean inserted with value and ID
+        with(request(HttpMethod.Get, "/api/booleans/$newId")) {
+            val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(true, newBoolean.value)
+        }
 
-            // change value to false
-            with(handleRequest(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
-                assertEquals(HttpStatusCode.NoContent, response.status())
-            }
+        // change value to false
+        with(request(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
+            assertEquals(HttpStatusCode.NoContent, response.status())
+        }
 
-            // get all values and verify
-            with(handleRequest(HttpMethod.Get, "/api/booleans")) {
-                val content = response.content
-                assertNotNull(content)
-                val newBooleans: List<AscientBoolean> = mapper.readValue(content)
-                assertEquals(HttpStatusCode.OK, response.status())
-                val newValue = newBooleans.find { it.id == newId }?.value
-                assertEquals(false, newValue)
-            }
+        // get all values and verify
+        with(request(HttpMethod.Get, "/api/booleans")) {
+            val content = response.content
+            assertNotNull(content)
+            val newBooleans: List<AscientBoolean> = mapper.readValue(content)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val newValue = newBooleans.find { it.id == newId }?.value
+            assertEquals(false, newValue)
+        }
 
-            // delete
-            with(handleRequest(HttpMethod.Delete, "/api/booleans/${newId}")) {
-                assertEquals(HttpStatusCode.NoContent, response.status())
-            }
+        // delete
+        with(request(HttpMethod.Delete, "/api/booleans/${newId}")) {
+            assertEquals(HttpStatusCode.NoContent, response.status())
+        }
 
-            // get all values and verify
-            with(handleRequest(HttpMethod.Get, "/api/booleans")) {
-                val newBooleans: List<AscientBoolean> = mapper.readValue(response.content ?: throw RuntimeException())
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(null, newBooleans.find { it.id == newId })
-            }
+        // get all values and verify
+        with(request(HttpMethod.Get, "/api/booleans")) {
+            val newBooleans: List<AscientBoolean> = mapper.readValue(response.content ?: throw RuntimeException())
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(null, newBooleans.find { it.id == newId })
         }
     }
 
     @Test
     fun `test default parameters`() {
-        withTestApplication(Application::server) {
-            // POST without a value
-            val id = with(handleRequest(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
-                assertEquals(HttpStatusCode.OK, response.status())
-                response.content?.toInt()
-            }
+        // POST without a value
+        val id = with(request(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            response.content?.toInt()
+        }
 
-            // Verify inserted with value True
-            with(handleRequest(HttpMethod.Get, "/api/booleans/$id")) {
-                val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(true, newBoolean.value)
-            }
+        // Verify inserted with value True
+        with(request(HttpMethod.Get, "/api/booleans/$id")) {
+            val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(true, newBoolean.value)
         }
     }
 
     @Test
     fun `test bad parameters`() {
-        withTestApplication(Application::server) {
-            with(handleRequest(HttpMethod.Get, "/api/booleans/9999999")) {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+        with(request(HttpMethod.Get, "/api/booleans/9999999")) {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
 
-            with(handleRequest(HttpMethod.Get, "/api/booleans/-1")) {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+        with(request(HttpMethod.Get, "/api/booleans/-1")) {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+         }
 
-            with(handleRequest(HttpMethod.Post, "/api/booleans")) {
-                assertEquals("Missing parameter: name", response.content)
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+            with(request(HttpMethod.Post, "/api/booleans")) {
+            assertEquals("Missing parameter: name", response.content)
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
 
+        val id = with(request(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            response.content?.toInt()
+        }
 
-            val id = with(handleRequest(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
-                assertEquals(HttpStatusCode.OK, response.status())
-                response.content?.toInt()
-            }
-            with(handleRequest(HttpMethod.Put, "/api/booleans/$id")) {
-                assertEquals("Missing parameter: value", response.content)
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+            with(request(HttpMethod.Put, "/api/booleans/$id")) {
+            assertEquals("Missing parameter: value", response.content)
+            assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
 }
+
+fun request(
+    method: HttpMethod,
+    uri: String
+): TestApplicationCall =
+    withTestApplication(Application::server) {
+        handleRequest(method, uri)
+    }
