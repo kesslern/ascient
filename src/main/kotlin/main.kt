@@ -19,6 +19,7 @@ fun main() {
     val databaseConnection: String = System.getProperty("database.connection")
     val databaseUsername: String = System.getProperty("database.username")
     val databasePassword: String = System.getProperty("database.password")
+    val databasePort: Int = System.getProperty("ascient.port", "8080").toInt()
 
     Flyway
             .configure()
@@ -34,7 +35,7 @@ fun main() {
 
     embeddedServer(
         Netty,
-        port = 8080) {
+        port = databasePort) {
         server()
     }.start(wait = true)
 }
