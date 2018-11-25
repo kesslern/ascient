@@ -54,42 +54,48 @@ fun Application.server() {
     }
 
     routing {
-        get("/api/booleans") {
-            call.respond(AscientBooleans.get())
+        route("/api") {
+            booleanRoutes()
         }
+    }
+}
 
-        get("/api/booleans/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            try {
-                call.respond(AscientBooleans.get(id))
-            } catch (e: NoSuchElementException) {
-                throw IllegalArgumentException("Cannot locate boolean with ID $id")
-            }
+fun Route.booleanRoutes() {
+    get("/booleans") {
+        call.respond(AscientBooleans.get())
+    }
+
+    get("/booleans/{id}") {
+        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+        try {
+            call.respond(AscientBooleans.get(id))
+        } catch (e: NoSuchElementException) {
+            throw IllegalArgumentException("Cannot locate boolean with ID $id")
         }
+    }
 
-        post("/api/booleans") {
-            val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
-            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
+    post("/booleans") {
+        val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
+        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
-            val id = AscientBooleans.insert(newName, newValue)
+        val id = AscientBooleans.insert(newName, newValue)
 
-            call.respond(id)
-        }
+        call.respond(id)
+    }
 
-        put("/api/booleans/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+    put("/booleans/{id}") {
+        val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
+        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
 
-            AscientBooleans.update(id, newValue)
+        AscientBooleans.update(id, newValue)
 
-            call.respond(HttpStatusCode.NoContent)
-        }
+        call.respond(HttpStatusCode.NoContent)
+    }
 
-        delete("/api/booleans/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            AscientBooleans.delete(id)
-            call.respond(HttpStatusCode.NoContent)
-        }
+    delete("/booleans/{id}") {
+        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+        AscientBooleans.delete(id)
+        call.respond(HttpStatusCode.NoContent)
     }
 }
 
