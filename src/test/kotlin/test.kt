@@ -5,15 +5,15 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.Application
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationCall
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.withTestApplication
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
-import us.kesslern.ascient.AscientBoolean
 import us.kesslern.ascient.server
 import java.util.*
 import kotlin.test.assertEquals
@@ -57,7 +57,7 @@ class AscientTests {
 
         // verify boolean inserted with value and ID
         with(request(HttpMethod.Get, "/api/booleans/$newId")) {
-            val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
+            val newBoolean = mapper.readValue(response.content, BooleanDBO::class.java)
             assertEquals(HttpStatusCode.OK, response.status())
             assertEquals(true, newBoolean.value)
         }
@@ -71,20 +71,20 @@ class AscientTests {
         with(request(HttpMethod.Get, "/api/booleans")) {
             val content = response.content
             assertNotNull(content)
-            val newBooleans: List<AscientBoolean> = mapper.readValue(content)
+            val newBooleans: List<BooleanDBO> = mapper.readValue(content)
             assertEquals(HttpStatusCode.OK, response.status())
             val newValue = newBooleans.find { it.id == newId }?.value
             assertEquals(false, newValue)
         }
 
         // delete
-        with(request(HttpMethod.Delete, "/api/booleans/${newId}")) {
+        with(request(HttpMethod.Delete, "/api/booleans/$newId")) {
             assertEquals(HttpStatusCode.NoContent, response.status())
         }
 
         // get all values and verify
         with(request(HttpMethod.Get, "/api/booleans")) {
-            val newBooleans: List<AscientBoolean> = mapper.readValue(response.content ?: throw RuntimeException())
+            val newBooleans: List<BooleanDBO> = mapper.readValue(response.content ?: throw RuntimeException())
             assertEquals(HttpStatusCode.OK, response.status())
             assertEquals(null, newBooleans.find { it.id == newId })
         }
@@ -100,7 +100,7 @@ class AscientTests {
 
         // Verify inserted with value True
         with(request(HttpMethod.Get, "/api/booleans/$id")) {
-            val newBoolean = mapper.readValue(response.content, AscientBoolean::class.java)
+            val newBoolean = mapper.readValue(response.content, BooleanDBO::class.java)
             assertEquals(HttpStatusCode.OK, response.status())
             assertEquals(true, newBoolean.value)
         }

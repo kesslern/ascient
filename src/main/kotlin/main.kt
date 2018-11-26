@@ -1,5 +1,6 @@
 package us.kesslern.ascient
 
+import booleanRoutes
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -8,7 +9,8 @@ import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.route
+import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
@@ -60,43 +62,6 @@ fun Application.server() {
     }
 }
 
-fun Route.booleanRoutes() {
-    get("/booleans") {
-        call.respond(AscientBooleans.get())
-    }
 
-    get("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-        try {
-            call.respond(AscientBooleans.get(id))
-        } catch (e: NoSuchElementException) {
-            throw IllegalArgumentException("Cannot locate boolean with ID $id")
-        }
-    }
-
-    post("/booleans") {
-        val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
-        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
-
-        val id = AscientBooleans.insert(newName, newValue)
-
-        call.respond(id)
-    }
-
-    put("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
-        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
-
-        AscientBooleans.update(id, newValue)
-
-        call.respond(HttpStatusCode.NoContent)
-    }
-
-    delete("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-        AscientBooleans.delete(id)
-        call.respond(HttpStatusCode.NoContent)
-    }
-}
 
 class MissingParam(name: String) : IllegalArgumentException("Missing parameter: $name")
