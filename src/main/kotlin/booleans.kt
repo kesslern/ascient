@@ -4,7 +4,6 @@ import io.ktor.response.respond
 import io.ktor.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import us.kesslern.ascient.MissingParam
 
 data class BooleanDBO(
         val id: Int,
@@ -21,7 +20,7 @@ object BooleansTable : Table("booleans") {
 object BooleansDAO {
     fun get(): List<BooleanDBO> =
             transaction {
-                BooleansTable.selectAll().map { it ->
+                BooleansTable.selectAll().orderBy(BooleansTable.id to true).map { it ->
                     BooleanDBO(
                             it[BooleansTable.id],
                             it[BooleansTable.name],

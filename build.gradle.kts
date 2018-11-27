@@ -43,4 +43,11 @@ application {
     mainClassName = "us.kesslern.ascient.MainKt"
     group = "us.kesslern"
     applicationName = "ascient"
+
+    // TODO: Make these configurable
+    applicationDefaultJvmArgs = listOf(
+        "-Ddatabase.connection=jdbc:postgresql://localhost:5432/postgres",
+        "-Ddatabase.username=user",
+        "-Ddatabase.password=pass"
+    )
 }

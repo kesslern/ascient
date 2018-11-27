@@ -1,6 +1,3 @@
-package us.kesslern.ascient
-
-import booleanRoutes
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -61,7 +58,5 @@ fun Application.server() {
         }
     }
 }
-
-
 
 class MissingParam(name: String) : IllegalArgumentException("Missing parameter: $name")
