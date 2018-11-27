@@ -65,40 +65,42 @@ object BooleansDAO {
 }
 
 fun Route.booleanRoutes() {
-    get("/booleans") {
-        call.respond(BooleansDAO.get())
-    }
-
-    get("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-        try {
-            call.respond(BooleansDAO.get(id))
-        } catch (e: NoSuchElementException) {
-            throw IllegalArgumentException("Cannot locate boolean with ID $id")
+    route("/booleans") {
+        get {
+            call.respond(BooleansDAO.get())
         }
-    }
 
-    post("/booleans") {
-        val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
-        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
+        post {
+            val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
+            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
-        val id = BooleansDAO.insert(newName, newValue)
+            val id = BooleansDAO.insert(newName, newValue)
 
-        call.respond(id)
-    }
+            call.respond(id)
+        }
 
-    put("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
-        val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+        get("/{id}") {
+            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+            try {
+                call.respond(BooleansDAO.get(id))
+            } catch (e: NoSuchElementException) {
+                throw IllegalArgumentException("Cannot locate boolean with ID $id")
+            }
+        }
 
-        BooleansDAO.update(id, newValue)
+        put("/{id}") {
+            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
+            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
 
-        call.respond(HttpStatusCode.NoContent)
-    }
+            BooleansDAO.update(id, newValue)
 
-    delete("/booleans/{id}") {
-        val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-        BooleansDAO.delete(id)
-        call.respond(HttpStatusCode.NoContent)
+            call.respond(HttpStatusCode.NoContent)
+        }
+
+        delete("/{id}") {
+            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+            BooleansDAO.delete(id)
+            call.respond(HttpStatusCode.NoContent)
+        }
     }
 }
