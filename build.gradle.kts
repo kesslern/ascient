@@ -39,33 +39,8 @@ dependencies {
     testCompile("io.ktor:ktor-server-test-host:${Versions.ktor}")
 }
 
-val databaseConnection =
-        System.getProperty(
-                "database.connection",
-                "jdbc:postgresql://localhost:5432/postgres")
-
-val databaseUsername = System.getProperty("database.username", "user")
-val databasePassword = System.getProperty("database.password", "pass")
-
 application {
     mainClassName = "us.kesslern.ascient.MainKt"
     group = "us.kesslern"
     applicationName = "ascient"
-    applicationDefaultJvmArgs = listOf(
-            "-Ddatabase.connection=${databaseConnection}",
-            "-Ddatabase.username=${databaseUsername}",
-            "-Ddatabase.password=${databasePassword}"
-    )
-}
-
-tasks {
-    withType<Jar> {
-        archiveName = "ascient.jar"
-
-        manifest {
-            attributes(mapOf("Main-Class" to ""))
-        }
-
-        from(configurations.compile.map { if (it.isDirectory) it else zipTree(it) })
-    }
 }
