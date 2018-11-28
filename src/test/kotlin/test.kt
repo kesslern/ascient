@@ -110,21 +110,14 @@ class AscientTests {
 
     @Test
     fun `test default parameters`() {
-        // POST without a value
-        val id = with(request(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
-            assertEquals(HttpStatusCode.OK, status)
-            content?.toInt()
+        insertBoolean(UUID.randomUUID().toString()) { id ->
+            // Verify inserted with value True
+            with(request(HttpMethod.Get, "/api/booleans/$id")) {
+                val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
+                assertEquals(HttpStatusCode.OK, status)
+                assertEquals(true, newBoolean.value)
+            }
         }
-
-        // Verify inserted with value True
-        with(request(HttpMethod.Get, "/api/booleans/$id")) {
-            val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
-            assertEquals(HttpStatusCode.OK, status)
-            assertEquals(true, newBoolean.value)
-        }
-
-        //Cleanup
-        request(HttpMethod.Delete, "/api/booleans/$id")
     }
 
     @Test
@@ -151,8 +144,10 @@ class AscientTests {
         }
     }
 
-    private fun insertBoolean(name: String, block: (id: Int) -> Unit) {
-        val id = request(HttpMethod.Post, "/api/booleans?name=$name").content?.toInt() ?:
+    private fun insertBoolean(name: String, value: String? = null, block: (id: Int) -> Unit) {
+        val uri = "/api/booleans?name=$name${if (value != null) "&value=$value" else ""}"
+
+        val id = request(HttpMethod.Post, uri).content?.toInt() ?:
         throw AssertionError("Expected successful boolean insertion")
 
         block(id)
