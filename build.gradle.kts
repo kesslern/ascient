@@ -2,6 +2,7 @@ import sun.tools.jar.resources.jar
 
 plugins {
     kotlin("jvm") version "1.3.10"
+    java
     application
 }
 
@@ -50,4 +51,8 @@ application {
         "-Ddatabase.username=user",
         "-Ddatabase.password=pass"
     )
+}
+
+val test by tasks.getting(Test::class) {
+    systemProperty("ascient.backend", System.getProperty("ascient.backend"))
 }
