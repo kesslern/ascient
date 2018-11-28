@@ -116,6 +116,9 @@ class AscientTests {
             assertEquals(HttpStatusCode.OK, status)
             assertEquals(true, newBoolean.value)
         }
+
+        //Cleanup
+        request(HttpMethod.Delete, "/api/booleans/$id")
     }
 
     @Test
@@ -128,7 +131,7 @@ class AscientTests {
             assertEquals(HttpStatusCode.BadRequest, status)
          }
 
-            with(request(HttpMethod.Post, "/api/booleans")) {
+        with(request(HttpMethod.Post, "/api/booleans")) {
             assertEquals("Missing parameter: name", content)
             assertEquals(HttpStatusCode.BadRequest, status)
         }
@@ -142,6 +145,8 @@ class AscientTests {
             assertEquals("Missing parameter: value", content)
             assertEquals(HttpStatusCode.BadRequest, status)
         }
+
+        request(HttpMethod.Delete, "/api/booleans/$id")
     }
 
     private fun request(method: HttpMethod, uri: String): UnifiedResponse {
