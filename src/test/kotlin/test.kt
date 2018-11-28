@@ -27,22 +27,17 @@ import kotlin.test.assertNotNull
 
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AscientTests {
+object AscientTestContext {
+    val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
 
-    private val logger = LoggerFactory.getLogger(AscientTests::class.java)
-    private val mapper = ObjectMapper().registerModule(KotlinModule())
+    const val databaseDriver = "org.postgresql.Driver"
+    const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
 
-    private val databaseDriver = "org.postgresql.Driver"
-    private val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
-
-    private val client = HttpClient(Apache)
-    private var backend = System.getProperty("ascient.backend")
-    private var useRealBackend = !backend.isEmpty()
+    val client = HttpClient(Apache)
+    var backend: String = System.getProperty("ascient.backend")
+    var useRealBackend = !backend.isEmpty()
 
     init {
-        logger.info("Starting...")
-
         if (!useRealBackend) {
             KPostgreSQLContainer().start()
             Flyway
@@ -52,6 +47,17 @@ class AscientTests {
                     .migrate()
             Database.connect(databaseConnection, databaseDriver)
         }
+    }
+}
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class AscientTests {
+
+    private val logger = LoggerFactory.getLogger(AscientTests::class.java)
+    private val mapper = AscientTestContext.mapper
+
+    init {
+        logger.info("Starting...")
     }
 
     @Test
@@ -153,35 +159,35 @@ class AscientTests {
 
         request(HttpMethod.Delete, "/api/booleans/$id")
     }
+}
 
-    private fun request(method: HttpMethod, uri: String): UnifiedResponse {
-        if (useRealBackend) {
-            return runBlocking {
-                with(requestWithBackend(method, backend + uri)) {
-                    UnifiedResponse(response.status, response.readText())
-                }
-            }
-        } else {
-            with(requestWithMockKtor(method, uri)) {
-                return UnifiedResponse(response.status(), response.content)
+fun request(method: HttpMethod, uri: String): UnifiedResponse {
+    if (AscientTestContext.useRealBackend) {
+        return runBlocking {
+            with(requestWithBackend(method, AscientTestContext.backend + uri)) {
+                UnifiedResponse(response.status, response.readText())
             }
         }
+    } else {
+        with(requestWithMockKtor(method, uri)) {
+            return UnifiedResponse(response.status(), response.content)
+        }
     }
+}
 
-    private fun requestWithMockKtor(
-            method: HttpMethod,
-            uri: String
-    ): TestApplicationCall =
-            withTestApplication(Application::server) {
-                handleRequest(method, uri)
-            }
+fun requestWithMockKtor(
+        method: HttpMethod,
+        uri: String
+): TestApplicationCall =
+        withTestApplication(Application::server) {
+            handleRequest(method, uri)
+        }
 
-    private suspend fun requestWithBackend(
-            method: HttpMethod,
-            uri: String
-    ): HttpClientCall = client.call(uri) {
-        this.method = method
-    }
+suspend fun requestWithBackend(
+        method: HttpMethod,
+        uri: String
+): HttpClientCall = AscientTestContext.client.call(uri) {
+    this.method = method
 }
 
 data class UnifiedResponse(
