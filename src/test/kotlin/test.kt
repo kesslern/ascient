@@ -136,15 +136,20 @@ class AscientTests {
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
-        val id = with(request(HttpMethod.Post, "/api/booleans?name=${UUID.randomUUID()}")) {
-            assertEquals(HttpStatusCode.OK, status)
-            content?.toInt()
-        }
 
+        insertBoolean(UUID.randomUUID().toString()) { id ->
             with(request(HttpMethod.Put, "/api/booleans/$id")) {
-            assertEquals("Missing parameter: value", content)
-            assertEquals(HttpStatusCode.BadRequest, status)
+                assertEquals("Missing parameter: value", content)
+                assertEquals(HttpStatusCode.BadRequest, status)
+            }
         }
+    }
+
+    private fun insertBoolean(name: String, block: (id: Int) -> Unit) {
+        val id = request(HttpMethod.Post, "/api/booleans?name=$name").content?.toInt() ?:
+        throw AssertionError("Expected successful boolean insertion")
+
+        block(id)
 
         request(HttpMethod.Delete, "/api/booleans/$id")
     }
