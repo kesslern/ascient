@@ -157,15 +157,15 @@ class AscientTests {
 }
 
 fun request(method: HttpMethod, uri: String): UnifiedResponse {
-    if (AscientTestContext.useRealBackend) {
-        return runBlocking {
+    return if (AscientTestContext.useRealBackend) {
+        runBlocking {
             with(requestWithBackend(method, AscientTestContext.backend + uri)) {
                 UnifiedResponse(response.status, response.readText())
             }
         }
     } else {
         with(requestWithMockKtor(method, uri)) {
-            return UnifiedResponse(response.status(), response.content)
+            UnifiedResponse(response.status(), response.content)
         }
     }
 }
