@@ -40,7 +40,7 @@ dependencies {
 }
 
 application {
-    mainClassName = "us.kesslern.ascient.MainKt"
+    mainClassName = "MainKt"
     group = "us.kesslern"
     applicationName = "ascient"
 
