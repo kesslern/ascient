@@ -12,13 +12,20 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-
+import java.io.File
 
 fun main() {
     val databaseConnection: String = System.getProperty("database.connection")
     val databaseUsername: String = System.getProperty("database.username")
     val databasePassword: String = System.getProperty("database.password")
     val databasePort: Int = System.getProperty("ascient.port", "8080").toInt()
+    val runningDirectory: String = System.getProperty("user.dir")
+    val enableHotReload = !runningDirectory.isBlank()
+    val watchPaths: List<String> =
+            if (enableHotReload)
+                listOf(File(runningDirectory).name)
+            else
+                listOf()
 
     Flyway
             .configure()
@@ -33,10 +40,11 @@ fun main() {
             password = databasePassword)
 
     embeddedServer(
-        Netty,
-        port = databasePort) {
-        server()
-    }.start(wait = true)
+            Netty,
+            watchPaths = watchPaths,
+            port = databasePort,
+            module = Application::server
+    ).start(wait = true)
 }
 
 fun Application.server() {
