@@ -27,7 +27,7 @@ object TestContext {
     const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
 
     val client = HttpClient(Apache)
-    var backend: String = System.getProperty("ascient.backend")
+    var backend: String = System.getProperty("ascient.backend", "")
     var useRealBackend = !backend.isEmpty()
 
     init {
