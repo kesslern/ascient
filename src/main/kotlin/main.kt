@@ -1,3 +1,6 @@
+
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.joda.JodaModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -40,7 +43,10 @@ fun main() {
 }
 
 fun Application.server() {
-    install(ContentNegotiation) { jackson {} }
+    install(ContentNegotiation) { jackson {
+        registerModule(JodaModule())
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    } }
 
     install(StatusPages) {
         exception<MissingParam> {

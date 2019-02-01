@@ -1,5 +1,3 @@
-import sun.tools.jar.resources.jar
-
 plugins {
     kotlin("jvm") version "1.3.10"
     java
@@ -7,7 +5,7 @@ plugins {
 }
 
 object Versions {
-    const val exposed           = "0.11.2"
+    const val exposed           = "0.12.1"
     const val flyway            = "5.2.1"
     const val kotlin            = "1.3.10"
     const val ktor              = "1.0.0"
@@ -28,6 +26,7 @@ repositories {
 dependencies {
     compile("ch.qos.logback:logback-classic:${Versions.logback}")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-joda:${Versions.jackson}")
     compile("io.ktor:ktor-jackson:${Versions.ktor}")
     compile("io.ktor:ktor-server-netty:${Versions.ktor}")
     compile("org.flywaydb:flyway-core:${Versions.flyway}")

@@ -1,5 +1,6 @@
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.Application
 import io.ktor.client.HttpClient
@@ -21,7 +22,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
 
 object TestContext {
-    val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
+    val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule()).registerModule(JodaModule())
 
     const val databaseDriver = "org.postgresql.Driver"
     const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"

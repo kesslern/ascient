@@ -4,38 +4,43 @@ import io.ktor.response.respond
 import io.ktor.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 
 data class BooleanDBO(
         val id: Int,
         val name: String,
-        val value: Boolean
+        val value: Boolean,
+        val creationTime: DateTime
 )
 
 object BooleansTable : Table("booleans") {
     val id: Column<Int> = integer("id").autoIncrement().primaryKey()
     val name: Column<String> = varchar("name", 36)
     val value: Column<Boolean> = bool("value")
+    val creationDate: Column<DateTime> = datetime("creation_date")
 }
 
 object BooleansDAO {
     fun get(): List<BooleanDBO> =
             transaction {
-                BooleansTable.selectAll().orderBy(BooleansTable.id to true).map { it ->
+                BooleansTable.selectAll().orderBy(BooleansTable.id to true).map {
                     BooleanDBO(
                             it[BooleansTable.id],
                             it[BooleansTable.name],
-                            it[BooleansTable.value]
+                            it[BooleansTable.value],
+                            it[BooleansTable.creationDate]
                     )
                 }
             }
 
     fun get(id: Int): BooleanDBO =
         transaction {
-            BooleansTable.select { BooleansTable.id eq id}.map { it ->
+            BooleansTable.select { BooleansTable.id eq id}.map {
                 BooleanDBO(
                         it[BooleansTable.id],
                         it[BooleansTable.name],
-                        it[BooleansTable.value]
+                        it[BooleansTable.value],
+                        it[BooleansTable.creationDate]
                 )
             }.first()
         }

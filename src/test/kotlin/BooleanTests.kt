@@ -1,11 +1,17 @@
+
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import org.joda.time.DateTime
+import org.joda.time.Seconds.THREE
+import org.joda.time.Seconds.secondsBetween
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BooleanTests {
@@ -27,11 +33,13 @@ class BooleanTests {
 
         // verify boolean inserted with value and ID
         with(request(HttpMethod.Get, "/api/booleans/$newId")) {
+            val currentTime = DateTime()
             val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals(true, newBoolean.value)
+            assertTrue(newBoolean.value)
+            assertTrue(secondsBetween(currentTime, newBoolean.creationTime) < THREE)
         }
-
+1
         // change value to false
         with(request(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
             assertEquals(HttpStatusCode.NoContent, status)
@@ -56,7 +64,7 @@ class BooleanTests {
         with(request(HttpMethod.Get, "/api/booleans")) {
             val newBooleans: List<BooleanDBO> = mapper.readValue(content ?: throw RuntimeException())
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals(null, newBooleans.find { it.id == newId })
+            assertNull(newBooleans.find { it.id == newId })
         }
     }
 
@@ -67,7 +75,7 @@ class BooleanTests {
             with(request(HttpMethod.Get, "/api/booleans/$id")) {
                 val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
                 assertEquals(HttpStatusCode.OK, status)
-                assertEquals(true, newBoolean.value)
+                assertTrue(newBoolean.value)
             }
         }
     }
