@@ -10,7 +10,8 @@ data class BooleanDBO(
         val id: Int,
         val name: String,
         val value: Boolean,
-        val creationTime: DateTime
+        val creationTime: DateTime,
+        val updatedAt: DateTime
 )
 
 object BooleansTable : Table("booleans") {
@@ -18,6 +19,7 @@ object BooleansTable : Table("booleans") {
     val name: Column<String> = varchar("name", 36)
     val value: Column<Boolean> = bool("value")
     val creationDate: Column<DateTime> = datetime("creation_date")
+    val updatedAt: Column<DateTime> = datetime("updated_at")
 }
 
 object BooleansDAO {
@@ -28,7 +30,8 @@ object BooleansDAO {
                             it[BooleansTable.id],
                             it[BooleansTable.name],
                             it[BooleansTable.value],
-                            it[BooleansTable.creationDate]
+                            it[BooleansTable.creationDate],
+                            it[BooleansTable.updatedAt]
                     )
                 }
             }
@@ -40,7 +43,8 @@ object BooleansDAO {
                         it[BooleansTable.id],
                         it[BooleansTable.name],
                         it[BooleansTable.value],
-                        it[BooleansTable.creationDate]
+                        it[BooleansTable.creationDate],
+                        it[BooleansTable.updatedAt]
                 )
             }.first()
         }

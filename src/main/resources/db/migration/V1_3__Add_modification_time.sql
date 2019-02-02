@@ -1,0 +1,14 @@
+ALTER TABLE booleans ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL;
+
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+  RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_timestamp
+  BEFORE UPDATE ON booleans
+  FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();

@@ -8,10 +8,7 @@ import org.joda.time.Seconds.secondsBetween
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BooleanTests {
@@ -32,14 +29,16 @@ class BooleanTests {
         }
 
         // verify boolean inserted with value and ID
+        var modifiedAt: DateTime
         with(request(HttpMethod.Get, "/api/booleans/$newId")) {
             val currentTime = DateTime()
             val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
             assertEquals(HttpStatusCode.OK, status)
             assertTrue(newBoolean.value)
             assertTrue(secondsBetween(currentTime, newBoolean.creationTime) < THREE)
+            modifiedAt = newBoolean.updatedAt
         }
-1
+
         // change value to false
         with(request(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
             assertEquals(HttpStatusCode.NoContent, status)
@@ -51,8 +50,10 @@ class BooleanTests {
             assertNotNull(content)
             val newBooleans: List<BooleanDBO> = mapper.readValue(content)
             assertEquals(HttpStatusCode.OK, status)
-            val newValue = newBooleans.find { it.id == newId }?.value
-            assertEquals(false, newValue)
+            val newBoolean = newBooleans.find { it.id == newId }
+            assertNotNull(newBoolean)
+            assertFalse(newBoolean.value)
+            assertTrue(newBoolean.updatedAt.isAfter(modifiedAt))
         }
 
         // delete
