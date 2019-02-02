@@ -18,11 +18,9 @@ A backend for storing generic data.
   
 ## Other planned stuff
 
-* Last modified date for all datatypes
-* Creation date for all datatypes
 * Triggers for booleans
-  * Timers
-  * Dates
+  * Set or toggle boolean after a time period
+  * Set or toggle a boolean at a specified time
 
 ## License
 
