@@ -1,3 +1,4 @@
+package us.kesslern.ascient
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
@@ -15,7 +16,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-
 
 fun main() {
     val databaseConnection: String = System.getProperty("database.connection")
@@ -36,17 +36,19 @@ fun main() {
             password = databasePassword)
 
     embeddedServer(
-        Netty,
-        port = databasePort) {
+            Netty,
+            port = databasePort) {
         server()
     }.start(wait = true)
 }
 
 fun Application.server() {
-    install(ContentNegotiation) { jackson {
-        registerModule(JodaModule())
-        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    } }
+    install(ContentNegotiation) {
+        jackson {
+            registerModule(JodaModule())
+            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        }
+    }
 
     install(StatusPages) {
         exception<MissingParam> {

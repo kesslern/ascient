@@ -1,3 +1,4 @@
+package us.kesslern.ascient
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.HttpMethod
@@ -108,8 +109,8 @@ class BooleanTests {
     private fun insertBoolean(name: String, value: String? = null, block: (id: Int) -> Unit) {
         val uri = "/api/booleans?name=$name${if (value != null) "&value=$value" else ""}"
 
-        val id = request(HttpMethod.Post, uri).content?.toInt() ?:
-        throw AssertionError("Expected successful boolean insertion")
+        val id = request(HttpMethod.Post, uri).content?.toInt()
+                ?: throw AssertionError("Expected successful boolean insertion")
 
         block(id)
 

@@ -1,3 +1,5 @@
+package us.kesslern.ascient
+
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
@@ -37,17 +39,17 @@ object BooleansDAO {
             }
 
     fun get(id: Int): BooleanDBO =
-        transaction {
-            BooleansTable.select { BooleansTable.id eq id}.map {
-                BooleanDBO(
-                        it[BooleansTable.id],
-                        it[BooleansTable.name],
-                        it[BooleansTable.value],
-                        it[BooleansTable.creationDate],
-                        it[BooleansTable.updatedAt]
-                )
-            }.first()
-        }
+            transaction {
+                BooleansTable.select { BooleansTable.id eq id }.map {
+                    BooleanDBO(
+                            it[BooleansTable.id],
+                            it[BooleansTable.name],
+                            it[BooleansTable.value],
+                            it[BooleansTable.creationDate],
+                            it[BooleansTable.updatedAt]
+                    )
+                }.first()
+            }
 
     fun insert(newName: String, newValue: Boolean): Int =
             transaction {
