@@ -3,12 +3,15 @@ package us.kesslern.ascient
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.*
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.route
 import io.ktor.routing.routing
@@ -42,11 +45,62 @@ fun main() {
     }.start(wait = true)
 }
 
+class AscientPrincipal : Principal
+
+class AscientAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
+    internal var authenticationFunction: suspend ApplicationCall.(String) -> Principal? = { null }
+
+    fun validate(body: suspend ApplicationCall.(String) -> Principal?) {
+        authenticationFunction = body
+    }
+}
+
+
+fun Authentication.Configuration.ascient(name: String? = null, configure: AscientAuthenticationProvider.() -> Unit) {
+    val provider = AscientAuthenticationProvider(name).apply(configure)
+    val authenticate = provider.authenticationFunction
+
+    provider.pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
+        val authHeader = call.request.header("X-AscientAuth")
+        val principal = authHeader?.let { authenticate(call, it) }
+
+
+        val error = when {
+            authHeader == null -> AuthenticationFailedCause.NoCredentials
+            principal == null -> AuthenticationFailedCause.InvalidCredentials
+            else -> null
+        }
+
+        if (error != null) {
+            call.respond(HttpStatusCode.Unauthorized)
+        }
+
+
+        if (principal != null) {
+            context.principal(principal)
+        }
+    }
+
+    register(provider)
+}
+
 fun Application.server() {
     install(ContentNegotiation) {
         jackson {
             registerModule(JodaModule())
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        }
+    }
+
+    install(Authentication) {
+        ascient {
+            validate { authHeader ->
+                if (authHeader == "please") {
+                    AscientPrincipal()
+                } else {
+                    null
+                }
+            }
         }
     }
 
@@ -61,8 +115,10 @@ fun Application.server() {
     }
 
     routing {
-        route("/api") {
-            booleanRoutes()
+        authenticate {
+            route("/api") {
+                booleanRoutes()
+            }
         }
     }
 }

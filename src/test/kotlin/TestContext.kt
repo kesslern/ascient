@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.call.call
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.request.header
 import io.ktor.client.response.readText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -64,7 +65,9 @@ fun requestWithMockKtor(
         uri: String
 ): TestApplicationCall =
         withTestApplication(Application::server) {
-            handleRequest(method, uri)
+            handleRequest(method, uri) {
+                addHeader("X-AscientAuth", "please")
+            }
         }
 
 suspend fun requestWithBackend(
@@ -72,6 +75,7 @@ suspend fun requestWithBackend(
         uri: String
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
+    this.header("X-AscientAuth", "please")
 }
 
 data class UnifiedResponse(

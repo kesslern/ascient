@@ -27,6 +27,7 @@ dependencies {
     compile("ch.qos.logback:logback-classic:${Versions.logback}")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-joda:${Versions.jackson}")
+    compile("io.ktor:ktor-auth:${Versions.ktor}")
     compile("io.ktor:ktor-jackson:${Versions.ktor}")
     compile("io.ktor:ktor-server-netty:${Versions.ktor}")
     compile("org.flywaydb:flyway-core:${Versions.flyway}")
