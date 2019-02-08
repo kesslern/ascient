@@ -13,12 +13,16 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.request.header
 import io.ktor.response.respond
+import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import java.util.*
+
+val validSessions = mutableListOf<String>()
 
 fun main() {
     val databaseConnection: String = System.getProperty("database.connection")
@@ -48,9 +52,9 @@ fun main() {
 class AscientPrincipal : Principal
 
 class AscientAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
-    internal var authenticationFunction: suspend ApplicationCall.(String) -> Principal? = { null }
+    internal var authenticationFunction: suspend ApplicationCall.(String?, String?) -> Principal? = { _, _ -> null }
 
-    fun validate(body: suspend ApplicationCall.(String) -> Principal?) {
+    fun validate(body: suspend ApplicationCall.(String?, String?) -> Principal?) {
         authenticationFunction = body
     }
 }
@@ -62,11 +66,12 @@ fun Authentication.Configuration.ascient(name: String? = null, configure: Ascien
 
     provider.pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
         val authHeader = call.request.header("X-AscientAuth")
-        val principal = authHeader?.let { authenticate(call, it) }
+        val sessionHeader = call.request.header("X-AscientSession")
+        val principal = with(call) { authenticate(authHeader, sessionHeader) }
 
 
         val error = when {
-            authHeader == null -> AuthenticationFailedCause.NoCredentials
+            authHeader == null && sessionHeader == null -> AuthenticationFailedCause.NoCredentials
             principal == null -> AuthenticationFailedCause.InvalidCredentials
             else -> null
         }
@@ -94,8 +99,8 @@ fun Application.server() {
 
     install(Authentication) {
         ascient {
-            validate { authHeader ->
-                if (authHeader == "please") {
+            validate { authHeader, sessionHeader ->
+                if (authHeader == "please" || validSessions.contains(sessionHeader)) {
                     AscientPrincipal()
                 } else {
                     null
@@ -118,6 +123,13 @@ fun Application.server() {
         authenticate {
             route("/api") {
                 booleanRoutes()
+            }
+            route("/authenticate") {
+                post {
+                    val sessionId = UUID.randomUUID().toString()
+                    validSessions.add(sessionId)
+                    call.respond(sessionId)
+                }
             }
         }
     }
