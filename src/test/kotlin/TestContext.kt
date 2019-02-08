@@ -46,15 +46,15 @@ object TestContext {
 }
 
 
-fun request(method: HttpMethod, uri: String): UnifiedResponse {
+fun request(method: HttpMethod, uri: String, authenticated: Boolean = true): UnifiedResponse {
     return if (TestContext.useRealBackend) {
         runBlocking {
-            with(requestWithBackend(method, TestContext.backend + uri)) {
+            with(requestWithBackend(method, TestContext.backend + uri, authenticated)) {
                 UnifiedResponse(response.status, response.readText())
             }
         }
     } else {
-        with(requestWithMockKtor(method, uri)) {
+        with(requestWithMockKtor(method, uri, authenticated)) {
             UnifiedResponse(response.status(), response.content)
         }
     }
@@ -62,20 +62,22 @@ fun request(method: HttpMethod, uri: String): UnifiedResponse {
 
 fun requestWithMockKtor(
         method: HttpMethod,
-        uri: String
+        uri: String,
+        authenticated: Boolean
 ): TestApplicationCall =
         withTestApplication(Application::server) {
             handleRequest(method, uri) {
-                addHeader("X-AscientAuth", "please")
+                if (authenticated) addHeader("X-AscientAuth", "please")
             }
         }
 
 suspend fun requestWithBackend(
         method: HttpMethod,
-        uri: String
+        uri: String,
+        authenticated: Boolean
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
-    this.header("X-AscientAuth", "please")
+    if (authenticated) this.header("X-AscientAuth", "please")
 }
 
 data class UnifiedResponse(

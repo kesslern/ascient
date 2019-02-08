@@ -17,6 +17,13 @@ class BooleanTests {
     private val mapper = TestContext.mapper
 
     @Test
+    fun `test no auth`() {
+        request(HttpMethod.Get, "/api/booleans", false).run {
+            assertEquals(HttpStatusCode.Unauthorized, status)
+        }
+    }
+
+    @Test
     fun `test boolean CRUD operations`() {
         // insert new boolean with random UUID as name and record the new ID
         val name = UUID.randomUUID()
