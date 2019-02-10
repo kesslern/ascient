@@ -2,6 +2,7 @@ package us.kesslern.ascient
 
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import mu.KotlinLogging
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -9,6 +10,7 @@ import kotlin.test.assertNotNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SessionTests {
+    private val logger = KotlinLogging.logger {}
 
     @Test
     fun `create and use a session`() {
@@ -18,6 +20,7 @@ class SessionTests {
             assertNotNull(content)
             sessionId = content
         }
+        logger.debug("Using session $sessionId")
         request(HttpMethod.Get, "/api/booleans", authenticated = false, sessionId = sessionId).run {
             assertEquals(HttpStatusCode.OK, status)
         }

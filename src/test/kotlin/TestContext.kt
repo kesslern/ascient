@@ -84,7 +84,7 @@ suspend fun requestWithBackend(
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
     if (authenticated) this.header("X-AscientAuth", "please")
-    if (sessionId !== null) this.header("X-AscientSession", "sessionId")
+    if (sessionId !== null) this.header("X-AscientSession", sessionId)
 }
 
 data class UnifiedResponse(
