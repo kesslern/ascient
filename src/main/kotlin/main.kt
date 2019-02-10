@@ -17,11 +17,14 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import java.util.*
+import kotlin.concurrent.schedule
 
-val validSessions = mutableListOf<String>()
+val sessions = AscientSessions(60)
+val logger = KotlinLogging.logger {}
 
 fun main() {
     val databaseConnection: String = System.getProperty("database.connection")
@@ -41,6 +44,12 @@ fun main() {
             user = databaseUsername,
             password = databasePassword)
 
+    val delay: Long = 10 * 1000
+    Timer().schedule(delay, delay) {
+        logger.info("Purging expired sessions...")
+        sessions.purge()
+    }
+
     embeddedServer(
             Netty,
             port = databasePort) {
@@ -59,7 +68,7 @@ fun Application.server() {
     install(Authentication) {
         ascient {
             validate { authHeader, sessionHeader ->
-                if (authHeader == "please" || validSessions.contains(sessionHeader)) {
+                if (authHeader == "please" || sessions.check(sessionHeader)) {
                     AscientPrincipal()
                 } else {
                     null
@@ -86,7 +95,7 @@ fun Application.server() {
             route("/authenticate") {
                 post {
                     val sessionId = UUID.randomUUID().toString()
-                    validSessions.add(sessionId)
+                    sessions.add(sessionId)
                     call.respond(sessionId)
                 }
             }

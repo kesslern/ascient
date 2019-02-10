@@ -45,16 +45,19 @@ object TestContext {
     }
 }
 
-
-fun request(method: HttpMethod, uri: String, authenticated: Boolean = true): UnifiedResponse {
+fun request(
+        method: HttpMethod, uri: String,
+        authenticated: Boolean = true,
+        sessionId: String? = null
+): UnifiedResponse {
     return if (TestContext.useRealBackend) {
         runBlocking {
-            with(requestWithBackend(method, TestContext.backend + uri, authenticated)) {
+            with(requestWithBackend(method, TestContext.backend + uri, authenticated, sessionId)) {
                 UnifiedResponse(response.status, response.readText())
             }
         }
     } else {
-        with(requestWithMockKtor(method, uri, authenticated)) {
+        with(requestWithMockKtor(method, uri, authenticated, sessionId)) {
             UnifiedResponse(response.status(), response.content)
         }
     }
@@ -63,21 +66,25 @@ fun request(method: HttpMethod, uri: String, authenticated: Boolean = true): Uni
 fun requestWithMockKtor(
         method: HttpMethod,
         uri: String,
-        authenticated: Boolean
+        authenticated: Boolean,
+        sessionId: String?
 ): TestApplicationCall =
         withTestApplication(Application::server) {
             handleRequest(method, uri) {
                 if (authenticated) addHeader("X-AscientAuth", "please")
+                if (sessionId !== null) addHeader("X-AscientSession", sessionId)
             }
         }
 
 suspend fun requestWithBackend(
         method: HttpMethod,
         uri: String,
-        authenticated: Boolean
+        authenticated: Boolean,
+        sessionId: String?
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
     if (authenticated) this.header("X-AscientAuth", "please")
+    if (sessionId !== null) this.header("X-AscientSession", "sessionId")
 }
 
 data class UnifiedResponse(
