@@ -82,6 +82,9 @@ fun Application.server() {
     }
 
     routing {
+        route("/api") {
+            userRoutes()
+        }
         authenticate {
             route("/api") {
                 booleanRoutes()
