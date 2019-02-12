@@ -10,6 +10,7 @@ object Versions {
     const val kotlin            = "1.3.21"
     const val ktor              = "1.1.2"
     const val jackson           = "2.9.+"
+    const val jbcrypt           = "0.4"
     const val junit             = "5.1.+"
     const val jvm               =  1.8
     const val kotlinLogging     = "1.6.22"
@@ -34,6 +35,7 @@ dependencies {
     compile("org.flywaydb:flyway-core:${Versions.flyway}")
     compile("org.jetbrains.exposed:exposed:${Versions.exposed}")
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}")
+    compile("org.mindrot:jbcrypt:${Versions.jbcrypt}")
     compile("org.postgresql:postgresql:${Versions.postgres}")
     compile("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
 

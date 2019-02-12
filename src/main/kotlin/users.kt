@@ -8,6 +8,7 @@ import mu.KotlinLogging
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import org.mindrot.jbcrypt.BCrypt
 
 data class UsersDBO(
         val id: Int,
@@ -24,12 +25,12 @@ object UsersTable : Table("users") {
 object UsersDAO {
     private val log = KotlinLogging.logger {}
 
-    fun check(username: String, hash: String): Boolean {
+    fun check(username: String, password: String): Boolean {
         return transaction {
             UsersTable.select { UsersTable.username eq username }.map {
                 val databasePassword = it[UsersTable.password]
-                log.debug("Checking username $username password $hash against $databasePassword")
-                databasePassword == hash
+                log.debug("Checking username $username")
+                BCrypt.checkpw(password, databasePassword)
             }.first()
         }
     }
