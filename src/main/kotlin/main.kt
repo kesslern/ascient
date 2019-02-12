@@ -23,36 +23,30 @@ import org.jetbrains.exposed.sql.Database
 import java.util.*
 import kotlin.concurrent.schedule
 
-val sessions = AscientSessions(60)
+val sessions = AscientSessions(Environment.sessionLength)
 val logger = KotlinLogging.logger {}
 
 fun main() {
-    val databaseConnection: String = System.getProperty("database.connection")
-    val databaseUsername: String = System.getProperty("database.username")
-    val databasePassword: String = System.getProperty("database.password")
-    val databasePort: Int = System.getProperty("ascient.port", "8080").toInt()
-
     Flyway
             .configure()
-            .dataSource(databaseConnection, databaseUsername, databasePassword)
+            .dataSource(Environment.databaseConnection, Environment.databaseUsername, Environment.databasePassword)
             .load()
             .migrate()
 
     Database.connect(
-            databaseConnection,
+        Environment.databaseConnection,
             driver = "org.postgresql.Driver",
-            user = databaseUsername,
-            password = databasePassword)
+            user = Environment.databaseUsername,
+            password = Environment.databasePassword)
 
-    val delay: Long = 10 * 1000
-    Timer().schedule(delay, delay) {
+    Timer().schedule(Environment.purgeInterval, Environment.purgeInterval) {
         logger.info("Purging expired sessions...")
         sessions.purge()
     }
 
     embeddedServer(
             Netty,
-            port = databasePort) {
+            port = Environment.databasePort) {
         server()
     }.start(wait = true)
 }
@@ -68,7 +62,7 @@ fun Application.server() {
     install(Authentication) {
         ascient {
             validate { authHeader, sessionHeader ->
-                if (authHeader == "please" || sessions.check(sessionHeader)) {
+                if (authHeader == Environment.password || sessions.check(sessionHeader)) {
                     AscientPrincipal()
                 } else {
                     null
