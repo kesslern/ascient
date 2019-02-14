@@ -7,6 +7,7 @@ import io.ktor.application.Application
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.call.call
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.request.header
 import io.ktor.client.response.readText
 import io.ktor.http.HttpMethod
@@ -27,7 +28,7 @@ object TestContext {
     const val databaseDriver = "org.postgresql.Driver"
     const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
 
-    val client = HttpClient()
+    val client = HttpClient(Apache)
     var backend: String = System.getProperty("ascient.backend", "")
     var useRealBackend = !backend.isEmpty()
 

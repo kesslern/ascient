@@ -39,6 +39,7 @@ dependencies {
 
     testCompile("org.testcontainers:postgresql:${Versions.postgresContainer}")
     testCompile("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+    testCompile("io.ktor:ktor-client-apache:${Versions.ktor}")
     testCompile("io.ktor:ktor-server-test-host:${Versions.ktor}")
 }
 

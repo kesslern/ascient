@@ -28,7 +28,7 @@ class SessionTests {
 
     @Test
     fun `test empty session`() {
-        request(HttpMethod.Post, "/authenticate", authenticated = false, sessionId = "").run {
+        request(HttpMethod.Get, "/api/booleans", authenticated = false, sessionId = "").run {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }

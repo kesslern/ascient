@@ -7,7 +7,9 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
+import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -52,6 +54,10 @@ fun main() {
 }
 
 fun Application.server() {
+    val log = KotlinLogging.logger {}
+
+    install(DefaultHeaders)
+    install(CallLogging)
     install(ContentNegotiation) {
         jackson {
             registerModule(JodaModule())
@@ -65,6 +71,7 @@ fun Application.server() {
                 if (authHeader == Environment.password || sessions.check(sessionHeader)) {
                     AscientPrincipal()
                 } else {
+                    log.debug("Rejecting auth")
                     null
                 }
             }
@@ -84,12 +91,10 @@ fun Application.server() {
     routing {
         route("/api") {
             userRoutes()
+            booleanRoutes()
         }
-        authenticate {
-            route("/api") {
-                booleanRoutes()
-            }
-            route("/authenticate") {
+        route("/authenticate") {
+            authenticate {
                 post {
                     val sessionId = UUID.randomUUID().toString()
                     sessions.add(sessionId)
