@@ -6,16 +6,16 @@ plugins {
 
 object Versions {
     const val exposed           = "0.12.1"
-    const val flyway            = "5.2.1"
-    const val kotlin            = "1.3.10"
-    const val ktor              = "1.0.0"
+    const val flyway            = "5.2.4"
+    const val kotlin            = "1.3.21"
+    const val ktor              = "1.1.1"
     const val jackson           = "2.9.+"
     const val junit             = "5.1.+"
     const val jvm               =  1.8
     const val kotlinLogging     = "1.6.22"
     const val logback           = "1.2.+"
     const val postgres          = "42.2.5"
-    const val postgresContainer = "1.10.1"
+    const val postgresContainer = "1.10.6"
 }
 
 repositories {
