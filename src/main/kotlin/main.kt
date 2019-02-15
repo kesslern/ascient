@@ -36,19 +36,23 @@ fun main() {
             .migrate()
 
     Database.connect(
-        Environment.databaseConnection,
+            Environment.databaseConnection,
             driver = "org.postgresql.Driver",
             user = Environment.databaseUsername,
             password = Environment.databasePassword)
 
-    Timer().schedule(Environment.purgeInterval, Environment.purgeInterval) {
+    Timer().schedule(
+            Environment.purgeInterval,
+            Environment.purgeInterval
+    ) {
         logger.info("Purging expired sessions...")
         sessions.purge()
     }
 
     embeddedServer(
             Netty,
-            port = Environment.databasePort) {
+            port = Environment.databasePort
+    ) {
         server()
     }.start(wait = true)
 }
@@ -89,12 +93,10 @@ fun Application.server() {
     }
 
     routing {
-        route("/api") {
-            userRoutes()
+        authenticate {
             booleanRoutes()
-        }
-        route("/authenticate") {
-            authenticate {
+            userRoutes()
+            route("/authenticate") {
                 post {
                     val sessionId = UUID.randomUUID().toString()
                     sessions.add(sessionId)

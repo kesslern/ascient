@@ -1,7 +1,6 @@
 package us.kesslern.ascient
 
 import io.ktor.application.call
-import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -76,7 +75,7 @@ object BooleansDAO {
 }
 
 fun Route.booleanRoutes() {
-    authenticate { route("/booleans") {
+    route("/api/booleans") {
         get {
             call.respond(BooleansDAO.get())
         }
@@ -113,5 +112,5 @@ fun Route.booleanRoutes() {
             BooleansDAO.delete(id)
             call.respond(HttpStatusCode.NoContent)
         }
-    } }
+    }
 }

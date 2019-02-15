@@ -27,7 +27,6 @@ fun Authentication.Configuration.ascient(name: String? = null, configure: Ascien
         val sessionHeader = call.request.header("X-AscientSession")
         val principal = with(call) { authenticate(authHeader, sessionHeader) }
 
-
         val error = when {
             authHeader == null && sessionHeader == null -> AuthenticationFailedCause.NoCredentials
             principal == null -> AuthenticationFailedCause.InvalidCredentials
@@ -35,9 +34,11 @@ fun Authentication.Configuration.ascient(name: String? = null, configure: Ascien
         }
 
         if (error != null) {
-            call.respond(HttpStatusCode.Unauthorized)
+            context.challenge("AscientAuth", error) {
+                call.respond(HttpStatusCode.Unauthorized)
+                it.complete()
+            }
         }
-
 
         if (principal != null) {
             context.principal(principal)

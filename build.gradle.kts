@@ -8,7 +8,7 @@ object Versions {
     const val exposed           = "0.12.1"
     const val flyway            = "5.2.4"
     const val kotlin            = "1.3.21"
-    const val ktor              = "1.1.1"
+    const val ktor              = "1.1.2"
     const val jackson           = "2.9.+"
     const val junit             = "5.1.+"
     const val jvm               =  1.8
