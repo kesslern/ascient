@@ -3,11 +3,14 @@ package us.kesslern.ascient
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.Route
+import io.ktor.routing.post
+import io.ktor.routing.route
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
 
 data class UsersDBO(
@@ -42,9 +45,11 @@ fun Route.userRoutes() {
             val username = call.request.queryParameters["username"] ?: throw MissingParam("username")
             val password = call.request.queryParameters["password"] ?: throw MissingParam("password")
 
-            val hash = password
-
-            call.respond(UsersDAO.check(username, hash))
+            if (UsersDAO.check(username, password)) {
+                call.respond(sessions.add())
+            } else {
+                call.respond(HttpStatusCode.Unauthorized)
+            }
         }
     }
 }

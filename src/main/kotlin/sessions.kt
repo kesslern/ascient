@@ -28,6 +28,13 @@ class AscientSessions(
     private val sessions: MutableList<AscientSession> = ArrayList()
     private val logger = KotlinLogging.logger {}
 
+    fun add(): String =
+        UUID.randomUUID().toString().let {
+            sessions.add(AscientSession(it))
+            it
+        }
+
+
     fun add(id: String) {
         if (sessions.findById(id) == null) {
             logger.debug("Adding session: $id")

@@ -93,14 +93,12 @@ fun Application.server() {
     }
 
     routing {
+        userRoutes()
         authenticate {
             booleanRoutes()
-            userRoutes()
             route("/authenticate") {
                 post {
-                    val sessionId = UUID.randomUUID().toString()
-                    sessions.add(sessionId)
-                    call.respond(sessionId)
+                    call.respond(sessions.add())
                 }
             }
         }
