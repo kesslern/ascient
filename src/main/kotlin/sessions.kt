@@ -34,14 +34,6 @@ class AscientSessions(
         return uuid
     }
 
-
-    fun add(id: String) {
-        if (sessions.findById(id) == null) {
-            logger.debug("Adding session: $id")
-            sessions.add(AscientSession(id))
-        } else throw SessionExistsException(id)
-    }
-
     fun check(id: String?): Boolean {
         if (id == null) return false
         val session = sessions.findById(id)

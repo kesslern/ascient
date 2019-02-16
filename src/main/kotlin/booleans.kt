@@ -1,6 +1,7 @@
 package us.kesslern.ascient
 
 import io.ktor.application.call
+import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -75,42 +76,44 @@ object BooleansDAO {
 }
 
 fun Route.booleanRoutes() {
-    route("/api/booleans") {
-        get {
-            call.respond(BooleansDAO.get())
-        }
-
-        post {
-            val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
-            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
-
-            val id = BooleansDAO.insert(newName, newValue)
-
-            call.respond(id)
-        }
-
-        get("/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            try {
-                call.respond(BooleansDAO.get(id))
-            } catch (e: NoSuchElementException) {
-                throw IllegalArgumentException("Cannot locate boolean with ID $id")
+    authenticate {
+        route("/booleans") {
+            get {
+                call.respond(BooleansDAO.get())
             }
-        }
 
-        put("/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
-            val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+            post {
+                val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
+                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
-            BooleansDAO.update(id, newValue)
+                val id = BooleansDAO.insert(newName, newValue)
 
-            call.respond(HttpStatusCode.NoContent)
-        }
+                call.respond(id)
+            }
 
-        delete("/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
-            BooleansDAO.delete(id)
-            call.respond(HttpStatusCode.NoContent)
+            get("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                try {
+                    call.respond(BooleansDAO.get(id))
+                } catch (e: NoSuchElementException) {
+                    throw IllegalArgumentException("Cannot locate boolean with ID $id")
+                }
+            }
+
+            put("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
+                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+
+                BooleansDAO.update(id, newValue)
+
+                call.respond(HttpStatusCode.NoContent)
+            }
+
+            delete("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                BooleansDAO.delete(id)
+                call.respond(HttpStatusCode.NoContent)
+            }
         }
     }
 }

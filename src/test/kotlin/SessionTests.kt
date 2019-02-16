@@ -15,7 +15,7 @@ class SessionTests {
     @Test
     fun `create and use a session`() {
         var sessionId: String
-        request(HttpMethod.Post, "/authenticate").run {
+        request(HttpMethod.Post, "/api/users/authenticate?username=admin&password=password").run {
             assertEquals(HttpStatusCode.OK, status)
             assertNotNull(content)
             sessionId = content
