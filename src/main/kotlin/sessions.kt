@@ -28,11 +28,11 @@ class AscientSessions(
     private val sessions: MutableList<AscientSession> = ArrayList()
     private val logger = KotlinLogging.logger {}
 
-    fun add(): String =
-        UUID.randomUUID().toString().let {
-            sessions.add(AscientSession(it))
-            it
-        }
+    fun add(): String {
+        val uuid = UUID.randomUUID().toString()
+        sessions.add(AscientSession(uuid))
+        return uuid
+    }
 
 
     fun add(id: String) {
