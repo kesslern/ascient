@@ -32,4 +32,18 @@ class SessionTests {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }
+
+    @Test
+    fun `test unknown user`() {
+        request(HttpMethod.Post, "/api/users/authenticate?username=baduser&password=password").run {
+            assertEquals(HttpStatusCode.Unauthorized, status)
+        }
+    }
+
+    @Test
+    fun `test bad password`() {
+        request(HttpMethod.Post, "/api/users/authenticate?username=admin&password=foobar").run {
+            assertEquals(HttpStatusCode.Unauthorized, status)
+        }
+    }
 }

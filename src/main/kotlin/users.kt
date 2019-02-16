@@ -34,7 +34,7 @@ object UsersDAO {
                 val databasePassword = it[UsersTable.password]
                 log.debug("Checking username $username")
                 BCrypt.checkpw(password, databasePassword)
-            }.first()
+            }.firstOrNull() ?: false
         }
     }
 }
