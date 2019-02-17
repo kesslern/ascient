@@ -21,6 +21,7 @@ import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
 
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
+data class Header(val name: String, val value: String)
 
 object TestContext {
     val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule()).registerModule(JodaModule())
@@ -48,43 +49,47 @@ object TestContext {
 fun request(
         method: HttpMethod, uri: String,
         authenticated: Boolean = true,
-        sessionId: String? = null
+        sessionId: String? = null,
+        handler: (UnifiedResponse.() -> Unit)? = null
 ): UnifiedResponse {
-    return if (TestContext.useRealBackend) {
+    val headers = ArrayList<Header>()
+    if (authenticated) headers.add(Header("X-AscientAuth", "please"))
+    if (sessionId !== null) headers.add(Header("X-AscientSession", sessionId))
+
+    val response = if (TestContext.useRealBackend) {
         runBlocking {
-            with(requestWithBackend(method, TestContext.backend + uri, authenticated, sessionId)) {
+            with(requestWithBackend(method, TestContext.backend + uri, headers)) {
                 UnifiedResponse(response.status, response.readText())
             }
         }
     } else {
-        with(requestWithMockKtor(method, uri, authenticated, sessionId)) {
+        with(requestWithMockKtor(method, uri, headers)) {
             UnifiedResponse(response.status(), response.content)
         }
     }
+
+    if (handler != null) response.let(handler)
+    return response
 }
 
 fun requestWithMockKtor(
         method: HttpMethod,
         uri: String,
-        authenticated: Boolean,
-        sessionId: String?
+        headers: List<Header>
 ): TestApplicationCall =
         withTestApplication(Application::server) {
             handleRequest(method, uri) {
-                if (authenticated) addHeader("X-AscientAuth", "please")
-                if (sessionId !== null) addHeader("X-AscientSession", sessionId)
+                headers.forEach { addHeader(it.name, it.value) }
             }
         }
 
 suspend fun requestWithBackend(
         method: HttpMethod,
         uri: String,
-        authenticated: Boolean,
-        sessionId: String?
+        headers: List<Header>
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
-    if (authenticated) this.header("X-AscientAuth", "please")
-    if (sessionId !== null) this.header("X-AscientSession", sessionId)
+    headers.forEach { this.header(it.name, it.value) }
 }
 
 data class UnifiedResponse(

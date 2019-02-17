@@ -91,7 +91,7 @@ class BooleanTests {
 
     @Test
     fun `test bad parameters`() {
-        with(request(HttpMethod.Get, "/api/booleans/9999999")) {
+        request(HttpMethod.Get, "/api/booleans/9999999") {
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
