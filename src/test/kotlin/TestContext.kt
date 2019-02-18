@@ -88,7 +88,7 @@ fun request(
     }
 }
 
-fun requestWithMockKtor(
+private fun requestWithMockKtor(
         method: HttpMethod,
         uri: String,
         headers: List<Header>
@@ -99,7 +99,7 @@ fun requestWithMockKtor(
             }
         }
 
-suspend fun requestWithBackend(
+private suspend fun requestWithBackend(
         method: HttpMethod,
         uri: String,
         headers: List<Header>

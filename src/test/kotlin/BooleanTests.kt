@@ -20,7 +20,7 @@ class BooleanTests {
 
     @Test
     fun `test no auth`() {
-        request(HttpMethod.Get, "/api/booleans", false).run {
+        request(HttpMethod.Get, "/api/booleans", false) {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }
