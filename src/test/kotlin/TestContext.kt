@@ -19,6 +19,8 @@ import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
 data class Header(val name: String, val value: String)
@@ -46,17 +48,34 @@ object TestContext {
     }
 }
 
+@ExperimentalContracts
 fun request(
-        method: HttpMethod, uri: String,
+        method: HttpMethod,
+        uri: String,
         authenticated: Boolean = true,
         sessionId: String? = null,
-        handler: (UnifiedResponse.() -> Unit)? = null
+        handler: (UnifiedResponse.() -> Unit)
+): UnifiedResponse {
+    contract {
+        callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+    }
+
+    val response = request(method, uri, authenticated, sessionId)
+    response.let(handler)
+    return response
+}
+
+fun request(
+        method: HttpMethod,
+        uri: String,
+        authenticated: Boolean = true,
+        sessionId: String? = null
 ): UnifiedResponse {
     val headers = ArrayList<Header>()
     if (authenticated) headers.add(Header("X-AscientAuth", "please"))
     if (sessionId !== null) headers.add(Header("X-AscientSession", sessionId))
 
-    val response = if (TestContext.useRealBackend) {
+    return if (TestContext.useRealBackend) {
         runBlocking {
             with(requestWithBackend(method, TestContext.backend + uri, headers)) {
                 UnifiedResponse(response.status, response.readText())
@@ -67,9 +86,6 @@ fun request(
             UnifiedResponse(response.status(), response.content)
         }
     }
-
-    if (handler != null) response.let(handler)
-    return response
 }
 
 fun requestWithMockKtor(

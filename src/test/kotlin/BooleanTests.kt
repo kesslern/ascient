@@ -9,8 +9,10 @@ import org.joda.time.Seconds.secondsBetween
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
 import kotlin.test.*
 
+@ExperimentalContracts
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BooleanTests {
 
@@ -27,18 +29,17 @@ class BooleanTests {
     fun `test boolean CRUD operations`() {
         // insert new boolean with random UUID as name and record the new ID
         val name = UUID.randomUUID()
-        val newId = with(request(
-                HttpMethod.Post,
-                "/api/booleans?name=$name&value=${true}")) {
+        var newId: Int
+        request(HttpMethod.Post, "/api/booleans?name=$name&value=${true}") {
             assertEquals(HttpStatusCode.OK, status)
             val content = content
             assertNotNull(content)
-            content.toInt()
+            newId = content.toInt()
         }
 
         // verify boolean inserted with value and ID
         var modifiedAt: DateTime
-        with(request(HttpMethod.Get, "/api/booleans/$newId")) {
+        request(HttpMethod.Get, "/api/booleans/$newId") {
             val currentTime = DateTime()
             val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
             assertEquals(HttpStatusCode.OK, status)
@@ -48,12 +49,12 @@ class BooleanTests {
         }
 
         // change value to false
-        with(request(HttpMethod.Put, "/api/booleans/$newId?value=${false}")) {
+        request(HttpMethod.Put, "/api/booleans/$newId?value=${false}") {
             assertEquals(HttpStatusCode.NoContent, status)
         }
 
         // get all values and verify
-        with(request(HttpMethod.Get, "/api/booleans")) {
+        request(HttpMethod.Get, "/api/booleans") {
             val content = content
             assertNotNull(content)
             val newBooleans: List<BooleanDBO> = mapper.readValue(content)
@@ -65,12 +66,12 @@ class BooleanTests {
         }
 
         // delete
-        with(request(HttpMethod.Delete, "/api/booleans/$newId")) {
+        request(HttpMethod.Delete, "/api/booleans/$newId") {
             assertEquals(HttpStatusCode.NoContent, status)
         }
 
         // get all values and verify
-        with(request(HttpMethod.Get, "/api/booleans")) {
+        request(HttpMethod.Get, "/api/booleans") {
             val newBooleans: List<BooleanDBO> = mapper.readValue(content ?: throw RuntimeException())
             assertEquals(HttpStatusCode.OK, status)
             assertNull(newBooleans.find { it.id == newId })
@@ -81,7 +82,7 @@ class BooleanTests {
     fun `test default parameters`() {
         insertBoolean(UUID.randomUUID().toString()) { id ->
             // Verify inserted with value True
-            with(request(HttpMethod.Get, "/api/booleans/$id")) {
+            request(HttpMethod.Get, "/api/booleans/$id") {
                 val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
                 assertEquals(HttpStatusCode.OK, status)
                 assertTrue(newBoolean.value)
@@ -95,18 +96,18 @@ class BooleanTests {
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
-        with(request(HttpMethod.Get, "/api/booleans/-1")) {
+        request(HttpMethod.Get, "/api/booleans/-1") {
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
-        with(request(HttpMethod.Post, "/api/booleans")) {
+        request(HttpMethod.Post, "/api/booleans") {
             assertEquals("Missing parameter: name", content)
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
 
         insertBoolean(UUID.randomUUID().toString()) { id ->
-            with(request(HttpMethod.Put, "/api/booleans/$id")) {
+            request(HttpMethod.Put, "/api/booleans/$id") {
                 assertEquals("Missing parameter: value", content)
                 assertEquals(HttpStatusCode.BadRequest, status)
             }
