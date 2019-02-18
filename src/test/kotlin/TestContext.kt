@@ -23,7 +23,13 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 class KPostgreSQLContainer : PostgreSQLContainer<KPostgreSQLContainer>()
+
 data class Header(val name: String, val value: String)
+
+data class UnifiedResponse(
+        val status: HttpStatusCode?,
+        val content: String?
+)
 
 object TestContext {
     val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule()).registerModule(JodaModule())
@@ -107,8 +113,3 @@ private suspend fun requestWithBackend(
     this.method = method
     headers.forEach { this.header(it.name, it.value) }
 }
-
-data class UnifiedResponse(
-        val status: HttpStatusCode?,
-        val content: String?
-)
