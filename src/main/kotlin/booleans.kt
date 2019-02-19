@@ -83,8 +83,10 @@ fun Route.booleanRoutes() {
             }
 
             post {
-                val newName = call.request.queryParameters["name"] ?: throw throw MissingParam("name")
+                val newName = call.request.queryParameters["name"] ?: throw MissingParam("name")
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
+
+                if (newName.isEmpty()) { throw MissingParam("name") }
 
                 val id = BooleansDAO.insert(newName, newValue)
 

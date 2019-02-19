@@ -17,7 +17,7 @@ class SessionTests {
     @Test
     fun `create and use a session`() {
         var sessionId: String
-        request(HttpMethod.Post, "/api/users/authenticate?username=admin&password=password") {
+        authenticateUser("admin", "password") {
             assertEquals(HttpStatusCode.OK, status)
             assertNotNull(content)
             sessionId = content
@@ -37,14 +37,14 @@ class SessionTests {
 
     @Test
     fun `test unknown user`() {
-        request(HttpMethod.Post, "/api/users/authenticate?username=baduser&password=password") {
+        authenticateUser("baduser", "password") {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }
 
     @Test
     fun `test bad password`() {
-        request(HttpMethod.Post, "/api/users/authenticate?username=admin&password=foobar") {
+        authenticateUser("admin", "foobar") {
             assertEquals(HttpStatusCode.Unauthorized, status)
         }
     }
