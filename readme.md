@@ -1,6 +1,10 @@
 # Ascient
 
-A backend for storing generic data.
+A backend for storing generic data. Exposes an secure REST API usable by web applications, scripts, IoT devices, or any other HTTP capable device.
+
+## Users
+
+Log in with admin/password.
 
 ## Supported Datatypes
 
@@ -15,12 +19,23 @@ A backend for storing generic data.
   * Counters
   * Arbitrary math statements
   * Stored math events
+* Strings
   
-## Other planned stuff
+## Features
+
+* User-based data storage
+* Store creation time and last modification time
+* Authenticate with session or username/password for any endpoint
+
+## Planned Fetaures
 
 * Triggers for booleans
   * Set or toggle boolean after a time period
   * Set or toggle a boolean at a specified time
+* Create new users
+* Change admin password on first login
+* Delete users as admin
+  * Include associated data
 
 ## License
 
