@@ -37,6 +37,10 @@ Log in with admin/password.
 * Delete users as admin
   * Include associated data
 
+## Other Todo
+
+* Change all POSTs to use JSON bodies instead of query parameters
+
 ## License
 
 ISC License
