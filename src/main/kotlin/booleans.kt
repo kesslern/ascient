@@ -52,21 +52,22 @@ object BooleansDAO {
                 }.first()
             }
 
-    fun insert(newName: String, newValue: Boolean): Int =
+    fun insert(newName: String, newValue: Boolean): BooleanDBO =
             transaction {
-                BooleansTable.insert {
+                val id = BooleansTable.insert {
                     it[name] = newName
                     it[value] = newValue
                 } get (BooleansTable.id) ?: throw IllegalArgumentException()
+                get(id)
             }
 
-    fun update(id: Int, newValue: Boolean) {
+    fun update(id: Int, newValue: Boolean): BooleanDBO =
         transaction {
             BooleansTable.update({ BooleansTable.id eq id }) {
                 it[value] = newValue
             }
+            get(id)
         }
-    }
 
     fun delete(id: Int) {
         transaction {
@@ -88,9 +89,9 @@ fun Route.booleanRoutes() {
 
                 if (newName.isEmpty()) { throw MissingParam("name") }
 
-                val id = BooleansDAO.insert(newName, newValue)
+                val boolean = BooleansDAO.insert(newName, newValue)
 
-                call.respond(id)
+                call.respond(boolean)
             }
 
             get("/{id}") {
@@ -106,9 +107,7 @@ fun Route.booleanRoutes() {
                 val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
 
-                BooleansDAO.update(id, newValue)
-
-                call.respond(HttpStatusCode.NoContent)
+                call.respond(BooleansDAO.update(id, newValue))
             }
 
             delete("/{id}") {

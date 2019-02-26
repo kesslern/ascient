@@ -28,44 +28,44 @@ class BooleanTests {
     fun `test boolean CRUD operations`() {
         // insert new boolean with random UUID as name and record the new ID
         val name = UUID.randomUUID().toString()
-        var newId: Int
+        var boolean: BooleanDBO
         createBoolean(name, true) {
             assertEquals(HttpStatusCode.OK, status)
-            val content = content
             assertNotNull(content)
-            newId = content.toInt()
+            boolean = mapper.readValue(content)
         }
 
         // verify boolean inserted with value and ID
-        var modifiedAt: DateTime
-        getBoolean(newId) {
-            val currentTime = DateTime()
-            val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
+        getBoolean(boolean.id) {
+            assertNotNull(content)
+            val newBoolean: BooleanDBO = mapper.readValue(content)
             assertEquals(HttpStatusCode.OK, status)
             assertTrue(newBoolean.value)
-            assertTrue(secondsBetween(currentTime, newBoolean.creationTime) < THREE)
-            modifiedAt = newBoolean.updatedAt
+            assertEquals(boolean.creationTime, newBoolean.creationTime)
+            assertEquals(boolean.updatedAt, newBoolean.updatedAt)
         }
 
         // change value to false
-        updateBoolean(newId, false) {
-            assertEquals(HttpStatusCode.NoContent, status)
+        updateBoolean(boolean.id, false) {
+            assertNotNull(content)
+            val newBoolean: BooleanDBO = mapper.readValue(content)
+            assertEquals(HttpStatusCode.OK, status)
+            assertFalse(newBoolean.value)
         }
 
         // get all values and verify
         getBooleans {
-            val content = content
             assertNotNull(content)
             val newBooleans: List<BooleanDBO> = mapper.readValue(content)
             assertEquals(HttpStatusCode.OK, status)
-            val newBoolean = newBooleans.find { it.id == newId }
+            val newBoolean = newBooleans.find { it.id == boolean.id }
             assertNotNull(newBoolean)
             assertFalse(newBoolean.value)
-            assertTrue(newBoolean.updatedAt.isAfter(modifiedAt))
+            assertTrue(newBoolean.updatedAt.isAfter(boolean.updatedAt))
         }
 
         // delete
-        deleteBoolean(newId) {
+        deleteBoolean(boolean.id) {
             assertEquals(HttpStatusCode.NoContent, status)
         }
 
@@ -73,7 +73,7 @@ class BooleanTests {
         getBooleans {
             val newBooleans: List<BooleanDBO> = mapper.readValue(content ?: throw RuntimeException())
             assertEquals(HttpStatusCode.OK, status)
-            assertNull(newBooleans.find { it.id == newId })
+            assertNull(newBooleans.find { it.id == boolean.id })
         }
     }
 
@@ -117,7 +117,8 @@ class BooleanTests {
         var id: Int
         createBoolean(name, value) {
             assertNotNull(content)
-            id = content.toInt()
+            val boolean: BooleanDBO = mapper.readValue(content)
+            id = boolean.id
         }
 
         block(id)
