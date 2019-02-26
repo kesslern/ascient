@@ -78,7 +78,10 @@ fun request(
         sessionId: String? = null
 ): UnifiedResponse {
     val headers = ArrayList<Header>()
-    if (authenticated) headers.add(Header("X-AscientAuth", "please"))
+    if (authenticated) {
+        headers.add(Header("X-AscientUsername", "admin"))
+        headers.add(Header("X-AscientPassword", "password"))
+    }
     if (sessionId !== null) headers.add(Header("X-AscientSession", sessionId))
 
     return if (TestContext.useRealBackend) {

@@ -104,7 +104,7 @@ fun Route.booleanRoutes() {
             }
 
             put("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("this won't happen...")
+                val id = call.parameters["id"]?.toInt()!!
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
 
                 call.respond(BooleansDAO.update(id, newValue))

@@ -7,12 +7,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
 import io.ktor.response.respond
 
-class AscientPrincipal : Principal
+class AscientPrincipal(
+    val user: UserDBO
+) : Principal
 
 class AscientAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
-    internal var authenticationFunction: suspend ApplicationCall.(String?, String?) -> Principal? = { _, _ -> null }
+    internal var authenticationFunction: suspend ApplicationCall.(String?, String?, String?) -> Principal? = { _, _, _ -> null }
 
-    fun validate(body: suspend ApplicationCall.(String?, String?) -> Principal?) {
+    fun validate(body: suspend ApplicationCall.(String?, String?, String?) -> Principal?) {
         authenticationFunction = body
     }
 }
@@ -23,12 +25,13 @@ fun Authentication.Configuration.ascient(name: String? = null, configure: Ascien
     val authenticate = provider.authenticationFunction
 
     provider.pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
-        val authHeader = call.request.header("X-AscientAuth")
         val sessionHeader = call.request.header("X-AscientSession")
-        val principal = with(call) { authenticate(authHeader, sessionHeader) }
+        val username = call.request.header("X-AscientUsername")
+        val password = call.request.header("X-AscientPassword")
+        val principal = with(call) { authenticate(sessionHeader, username, password) }
 
         val error = when {
-            authHeader == null && sessionHeader == null -> AuthenticationFailedCause.NoCredentials
+           sessionHeader == null -> AuthenticationFailedCause.NoCredentials
             principal == null -> AuthenticationFailedCause.InvalidCredentials
             else -> null
         }

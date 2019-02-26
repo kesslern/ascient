@@ -13,6 +13,7 @@ class SessionExistsException(id: String) : Exception() {
 
 data class AscientSession(
         val id: String,
+        val user: UserDBO,
         var lastActive: Date = Date()
 )
 
@@ -28,19 +29,19 @@ class AscientSessions(
     private val sessions: MutableList<AscientSession> = ArrayList()
     private val logger = KotlinLogging.logger {}
 
-    fun add(): String {
+    fun add(user: UserDBO): String {
         val uuid = UUID.randomUUID().toString()
-        sessions.add(AscientSession(uuid))
+        sessions.add(AscientSession(uuid, user))
         return uuid
     }
 
-    fun check(id: String?): Boolean {
-        if (id == null) return false
+    fun check(id: String?): UserDBO? {
+        if (id == null) return null
         val session = sessions.findById(id)
 
         if (session == null) {
             logger.debug("No session: $id")
-            return false
+            return null
         }
 
         val now = Date()
@@ -48,8 +49,8 @@ class AscientSessions(
         return if (now.before(session.expiration())) {
             logger.debug("Updating last active time of session $id")
             session.lastActive = now
-            true
-        } else false
+            session.user
+        } else null
     }
 
     fun purge() {

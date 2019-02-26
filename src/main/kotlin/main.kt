@@ -69,9 +69,16 @@ fun Application.server() {
 
     install(Authentication) {
         ascient {
-            validate { authHeader, sessionHeader ->
-                if (authHeader == Environment.password || sessions.check(sessionHeader)) {
-                    AscientPrincipal()
+            validate { sessionHeader, username, password ->
+
+                val user = if (sessionHeader != null) {
+                    sessions.check(sessionHeader)
+                } else if (username != null && password != null) {
+                    UsersDAO.check(username, password)
+                } else null
+
+                if (user != null) {
+                    AscientPrincipal(user)
                 } else {
                     log.debug("Rejecting auth")
                     null
