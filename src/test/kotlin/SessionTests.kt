@@ -19,8 +19,7 @@ class SessionTests {
         var sessionId: String
         authenticateUser("admin", "password") {
             assertEquals(HttpStatusCode.OK, status)
-            assertNotNull(content)
-            sessionId = content
+            sessionId = (readJson(content) as AuthenticationResponse).sessionId
         }
         logger.debug("Using session $sessionId")
         request(HttpMethod.Get, "/api/booleans", authenticated = false, sessionId = sessionId) {

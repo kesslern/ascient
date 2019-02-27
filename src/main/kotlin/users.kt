@@ -19,13 +19,15 @@ import org.mindrot.jbcrypt.BCrypt
 data class UserDBO(
         val id: Int,
         val username: String,
-        val password: String
+        val password: String,
+        val mustChangePassword: Boolean
 )
 
 object UsersTable : Table("users") {
     val id: Column<Int> = integer("id").autoIncrement().primaryKey()
     val username: Column<String> = varchar("username", 36)
     val password: Column<String> = varchar("password", 60)
+    val mustChangePassword: Column<Boolean> = bool("must_change_password")
 }
 
 object UsersDAO {
@@ -40,7 +42,8 @@ object UsersDAO {
                     UserDBO(
                         it[UsersTable.id],
                         it[UsersTable.username],
-                        it[UsersTable.password]
+                        it[UsersTable.password],
+                        it[UsersTable.mustChangePassword]
                     )
                 } else null
             }.firstOrNull()
@@ -51,10 +54,13 @@ object UsersDAO {
         transaction {
             UsersTable.update({ UsersTable.id eq id }) {
                 it[password] = newPassword
+                it[mustChangePassword] = false
             }
         }
     }
 }
+
+data class AuthenticationResponse(val sessionId: String, val mustChangePassword: Boolean)
 
 fun Route.userRoutes() {
     route("/users") {
@@ -64,7 +70,10 @@ fun Route.userRoutes() {
             val user = UsersDAO.check(username, password)
 
             if (user != null) {
-                call.respond(sessions.add(user))
+                call.respond(AuthenticationResponse(
+                    sessionId = sessions.add(user),
+                    mustChangePassword = user.mustChangePassword
+                ))
             } else {
                 call.respond(HttpStatusCode.Unauthorized)
             }

@@ -31,14 +31,12 @@ class BooleanTests {
         var boolean: BooleanDBO
         createBoolean(name, true) {
             assertEquals(HttpStatusCode.OK, status)
-            assertNotNull(content)
-            boolean = mapper.readValue(content)
+            boolean = readJson(content)
         }
 
         // verify boolean inserted with value and ID
         getBoolean(boolean.id) {
-            assertNotNull(content)
-            val newBoolean: BooleanDBO = mapper.readValue(content)
+            val newBoolean: BooleanDBO = readJson(content)
             assertEquals(HttpStatusCode.OK, status)
             assertTrue(newBoolean.value)
             assertEquals(boolean.creationTime, newBoolean.creationTime)
@@ -47,16 +45,14 @@ class BooleanTests {
 
         // change value to false
         updateBoolean(boolean.id, false) {
-            assertNotNull(content)
-            val newBoolean: BooleanDBO = mapper.readValue(content)
+            val newBoolean: BooleanDBO = readJson(content)
             assertEquals(HttpStatusCode.OK, status)
             assertFalse(newBoolean.value)
         }
 
         // get all values and verify
         getBooleans {
-            assertNotNull(content)
-            val newBooleans: List<BooleanDBO> = mapper.readValue(content)
+            val newBooleans: List<BooleanDBO> = readJson(content)
             assertEquals(HttpStatusCode.OK, status)
             val newBoolean = newBooleans.find { it.id == boolean.id }
             assertNotNull(newBoolean)
@@ -71,7 +67,7 @@ class BooleanTests {
 
         // get all values and verify
         getBooleans {
-            val newBooleans: List<BooleanDBO> = mapper.readValue(content ?: throw RuntimeException())
+            val newBooleans: List<BooleanDBO> = readJson(content)
             assertEquals(HttpStatusCode.OK, status)
             assertNull(newBooleans.find { it.id == boolean.id })
         }
@@ -116,8 +112,7 @@ class BooleanTests {
 
         var id: Int
         createBoolean(name, value) {
-            assertNotNull(content)
-            val boolean: BooleanDBO = mapper.readValue(content)
+            val boolean: BooleanDBO = readJson(content)
             id = boolean.id
         }
 

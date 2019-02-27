@@ -3,6 +3,7 @@ package us.kesslern.ascient
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.Application
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
@@ -19,6 +20,7 @@ import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
+import java.lang.RuntimeException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -52,6 +54,11 @@ object TestContext {
             Database.connect(databaseConnection, databaseDriver)
         }
     }
+}
+
+inline fun <reified T> readJson(content: String?): T {
+    if (content == null) throw RuntimeException("Empty Content")
+    return TestContext.mapper.readValue(content)
 }
 
 @ExperimentalContracts
