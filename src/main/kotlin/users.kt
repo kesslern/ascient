@@ -9,11 +9,8 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.mindrot.jbcrypt.BCrypt
 
 data class UserDBO(
@@ -58,6 +55,15 @@ object UsersDAO {
             }
         }
     }
+
+    fun new(username: String, hash: String) {
+        transaction {
+            UsersTable.insert {
+                it[UsersTable.username] = username
+                it[UsersTable.password] = hash
+            }
+        }
+    }
 }
 
 data class AuthenticationResponse(val sessionId: String, val mustChangePassword: Boolean)
@@ -77,6 +83,14 @@ fun Route.userRoutes() {
             } else {
                 call.respond(HttpStatusCode.Unauthorized)
             }
+        }
+
+        post("/new") {
+            val username = call.request.queryParameters["username"] ?: throw MissingParam("username")
+            val password = call.request.queryParameters["password"] ?: throw MissingParam("password")
+            val hash = BCrypt.hashpw(password, BCrypt.gensalt(12))
+            UsersDAO.new(username, hash)
+            call.respond(HttpStatusCode.NoContent)
         }
 
         authenticate {

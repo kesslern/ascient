@@ -17,6 +17,18 @@ fun authenticateUser(username: String, password: String, handler: UnifiedRespons
 }
 
 @ExperimentalContracts
+fun newUser(username: String, password: String, handler: UnifiedResponse.() -> Unit) {
+    contract {
+        callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+    }
+    request(
+        HttpMethod.Post,
+        "/api/users/new?username=$username&password=$password",
+        handler = handler
+    )
+}
+
+@ExperimentalContracts
 fun getBoolean(
         id: Int,
         authenticated: Boolean = true,
