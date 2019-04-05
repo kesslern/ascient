@@ -1,6 +1,16 @@
 # Ascient
 
-A backend for storing generic data. Exposes an secure REST API usable by web applications, scripts, IoT devices, or any other HTTP capable device.
+A backend and frontend for storing generic data. Exposes an secure REST API usable by web applications, scripts, IoT devices, or any other HTTP capable device. An example frontend is provided to consume this data.
+
+## Running the Project
+
+Run with docker: `docker-compose up [--detach]`.
+
+### TODO Development documentation
+
+- Starting a postgres docker
+- Running the backend and connecting to the postgres docker
+- Running the frontend and proxying to the backend
 
 ## Users
 
@@ -29,13 +39,14 @@ Log in with admin/password.
 
 ## Planned Fetaures
 
-* Triggers for booleans
+* Change data periodically
   * Set or toggle boolean after a time period
   * Set or toggle a boolean at a specified time
 * Create new users
 * Change admin password on first login
-* Delete users as admin
+* Ability to delete users as admin
   * Include associated data
+* Real-time data updates via websockets (show changes from other users)
 
 ## Other Todo
 
