@@ -4,17 +4,19 @@ A backend and frontend for storing generic data. Exposes an secure REST API usab
 
 ## Running the Project
 
-Run with docker: `docker-compose up [--detach]`.
+Build and run with docker: 
+```
+docker-compose build
+docker-compose up [--detach]
+```
 
-### TODO Development documentation
+### Default Ports and Users
 
-- Starting a postgres docker
-- Running the backend and connecting to the postgres docker
-- Running the frontend and proxying to the backend
-
-## Users
-
-Log in with admin/password.
+| Service          | Port | Username | Password |
+| ---------------- | ---- | -------- | -------- |
+| ascient-backend  | 8081 | admin    | password |
+| ascient-frontend | 8080 | admin    | password |
+| postgres         | 5432 | user     | pass     |
 
 ## Supported Datatypes
 
@@ -51,12 +53,13 @@ Log in with admin/password.
 ## Other Todo
 
 * Change all POSTs to use JSON bodies instead of query parameters
+* Configurable ports and default usernames
 
 ## License
 
 ISC License
 
-Copyright 2018 Nathan Kessler
+Copyright 2019 Nathan Kessler
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
