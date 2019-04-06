@@ -19,7 +19,10 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import mu.KotlinLogging
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.internal.exception.FlywaySqlException
 import org.jetbrains.exposed.sql.Database
+import java.io.EOFException
+import java.net.ConnectException
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -27,11 +30,25 @@ val sessions = AscientSessions(Environment.sessionLength)
 val logger = KotlinLogging.logger {}
 
 fun main() {
-    Flyway
-            .configure()
-            .dataSource(Environment.databaseConnection, Environment.databaseUsername, Environment.databasePassword)
-            .load()
-            .migrate()
+    while (true) {
+        try {
+            Flyway
+                    .configure()
+                    .dataSource(Environment.databaseConnection, Environment.databaseUsername, Environment.databasePassword)
+                    .load()
+                    .migrate()
+        } catch (e: FlywaySqlException) {
+            val cause = e.cause?.cause
+            if (cause is ConnectException || cause is EOFException) {
+                logger.warn(e) { "Unable to connect to database. Waiting before retrying..." }
+                Thread.sleep(10000)
+                continue
+            } else {
+                throw e
+            }
+        }
+        break
+    }
 
     Database.connect(
             Environment.databaseConnection,
