@@ -3,22 +3,22 @@ services:
   backend:
     build: ./backend
     ports:
-      - 8081:8080
+      - "${BACKEND_PORT}:8080"
     environment:
-      - DB_CONNECTION=jdbc:postgresql://database:5432/postgres
-      - DB_USERNAME=user
-      - DB_PASSWORD=pass
+      - DB_CONNECTION=jdbc:postgresql://database:${POSTGRES_PORT}/postgres
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASS}
   frontend:
     build: ./frontend
     ports:
       - "8080:80"
     environment:
-      - BACKEND_URL=backend
-      - BACKEND_PORT=8080
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=${BACKEND_PORT}
   database:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
     image: postgres
