@@ -14,7 +14,7 @@ services:
       - "${FRONTEND_PORT}:80"
     environment:
       - BACKEND_HOST=backend
-      - BACKEND_PORT=${BACKEND_PORT}
+      - BACKEND_PORT=8080
   database:
     ports:
       - "${POSTGRES_PORT}:5432"
