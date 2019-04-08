@@ -1,0 +1,5 @@
+version: '3.4'
+services:
+  database:
+    volumes:
+      - ${POSTGRES_DATA_DIR}:/var/lib/postgresql/data
