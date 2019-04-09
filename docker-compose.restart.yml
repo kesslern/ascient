@@ -1,0 +1,8 @@
+version: '3.4'
+services:
+  database:
+    restart: always
+  frontend:
+    restart: always
+  backend:
+    restart: always

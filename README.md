@@ -1,10 +1,22 @@
 # Ascient
 
-A backend for storing generic data. Exposes an secure REST API usable by web applications, scripts, IoT devices, or any other HTTP capable device.
+A backend and frontend for storing generic data. Exposes an secure REST API usable by web applications, scripts, IoT devices, or any other HTTP capable device. An example frontend is provided to consume this data.
 
-## Users
+## Running the Project
 
-Log in with admin/password.
+Build and run with docker: 
+```
+docker-compose build
+docker-compose up [--detach]
+```
+
+### Default Ports and Users
+
+| Service          | Port | Username | Password |
+| ---------------- | ---- | -------- | -------- |
+| ascient-backend  | 8081 | admin    | password |
+| ascient-frontend | 8080 | admin    | password |
+| postgres         | 5432 | user     | pass     |
 
 ## Supported Datatypes
 
@@ -29,23 +41,25 @@ Log in with admin/password.
 
 ## Planned Fetaures
 
-* Triggers for booleans
+* Change data periodically
   * Set or toggle boolean after a time period
   * Set or toggle a boolean at a specified time
 * Create new users
 * Change admin password on first login
-* Delete users as admin
+* Ability to delete users as admin
   * Include associated data
+* Real-time data updates via websockets (show changes from other users)
 
 ## Other Todo
 
 * Change all POSTs to use JSON bodies instead of query parameters
+* Configurable ports and default usernames
 
 ## License
 
 ISC License
 
-Copyright 2018 Nathan Kessler
+Copyright 2019 Nathan Kessler
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
