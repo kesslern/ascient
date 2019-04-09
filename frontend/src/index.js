@@ -25,6 +25,8 @@ const store = configureStore({
   preloadedState: defaultState,
 })
 
+window.websocket = new WebSocket(`ws://${ window.location.host }/api/websocket`)
+
 function render(Component) {
   ReactDOM.render(
     <Provider store={store}>
