@@ -27,8 +27,8 @@ Refer to the [deployment](https://facebook.github.io/create-react-app/docs/deplo
 
 Alternatively, the UI can run in a Docker container:
 ```shell
-docker build -t ascient-ui
-docker run -d --name ascient-ui -p [UI_PORT]:80 -eBACKEND_URL=[BACKEND_HOST] -eBACKEND_PORT=[BACKEND_PORT] ascient-ui
+docker build -t ascient-frontend .
+docker run -d --name ascient-frontend -p [UI_PORT]:80 -eBACKEND_HOST=[BACKEND_HOST] -eBACKEND_PORT=[BACKEND_PORT] ascient-frontend
 ```
 
 ## More Info
