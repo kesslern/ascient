@@ -2,6 +2,7 @@ package us.kesslern.ascient
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -104,10 +105,14 @@ fun Route.booleanRoutes() {
             }
 
             put("/{id}") {
+                val userId = call.principal<AscientPrincipal>()!!.user.id
                 val id = call.parameters["id"]?.toInt()!!
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
 
-                call.respond(BooleansDAO.update(id, newValue))
+                val boolean = BooleansDAO.update(id, newValue)
+
+                MessageBroker.dispatch(Event(userId, boolean))
+                call.respond(boolean)
             }
 
             delete("/{id}") {

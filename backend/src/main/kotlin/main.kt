@@ -1,5 +1,6 @@
 package us.kesslern.ascient
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import io.ktor.application.Application
@@ -79,6 +80,8 @@ fun main() {
     }.start(wait = true)
 }
 
+var objectMapper: ObjectMapper? = null
+
 @UseExperimental(ObsoleteCoroutinesApi::class)
 fun Application.server() {
     val log = KotlinLogging.logger {}
@@ -91,6 +94,7 @@ fun Application.server() {
         jackson {
             registerModule(JodaModule())
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            objectMapper = this
         }
     }
 
@@ -135,9 +139,11 @@ fun Application.server() {
                         close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Unauthenticated"))
                         return@webSocket
                     } else {
-                        outgoing.send(Frame.Text("Authenticated"))
+                        log.debug("Adding user ${user.id} to message broker")
                         MessageBroker.add(this, user)
+                        outgoing.send(Frame.Text("Authenticated"))
                     }
+                    incoming.receiveOrNull()
                 } finally {
                     MessageBroker.remove(this)
                 }
