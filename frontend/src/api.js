@@ -1,3 +1,10 @@
+function websocketStuff(sessionId) {
+  window.socket = new WebSocket(`ws://${ window.location.host }/api/websocket`)
+  window.socket.addEventListener('open', () => {
+    window.socket.send(sessionId)
+  })
+}
+
 class Api {
   sessionId = null
 
@@ -9,6 +16,7 @@ class Api {
     if (response.ok) {
       const body = JSON.parse(await response.text())
       this.sessionId = body.sessionId
+      websocketStuff(body.sessionId)
       return body
     }
     throw Error('unauthenticated')

@@ -11,12 +11,19 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.cio.websocket.CloseReason
+import io.ktor.http.cio.websocket.Frame
+import io.ktor.http.cio.websocket.close
+import io.ktor.http.cio.websocket.readText
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.websocket.WebSockets
+import io.ktor.websocket.webSocket
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.internal.exception.FlywaySqlException
@@ -72,11 +79,14 @@ fun main() {
     }.start(wait = true)
 }
 
+@UseExperimental(ObsoleteCoroutinesApi::class)
 fun Application.server() {
     val log = KotlinLogging.logger {}
 
     install(DefaultHeaders)
     install(CallLogging)
+    install(WebSockets)
+
     install(ContentNegotiation) {
         jackson {
             registerModule(JodaModule())
@@ -116,6 +126,22 @@ fun Application.server() {
 
     routing {
         route("/api") {
+            webSocket("/websocket") {
+                try {
+                    val authFrame = incoming.receive() as Frame.Text
+                    val user = sessions.check(authFrame.readText())
+                    if (user == null) {
+                        outgoing.send(Frame.Text("Unauthenticated"))
+                        close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Unauthenticated"))
+                        return@webSocket
+                    } else {
+                        outgoing.send(Frame.Text("Authenticated"))
+                        MessageBroker.add(this, user)
+                    }
+                } finally {
+                    MessageBroker.remove(this)
+                }
+            }
             userRoutes()
             booleanRoutes()
         }
