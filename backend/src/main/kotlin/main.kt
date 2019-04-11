@@ -101,10 +101,12 @@ fun Application.server() {
     install(Authentication) {
         ascient {
             validate { sessionHeader, username, password ->
+                var user = if (sessionHeader != null) sessions.check(sessionHeader) else null
+                if (user != null) {
+                    return@validate AscientPrincipal(user, sessionHeader)
+                }
 
-                val user = if (sessionHeader != null) {
-                    sessions.check(sessionHeader)
-                } else if (username != null && password != null) {
+                user = if (username != null && password != null) {
                     UsersDAO.check(username, password)
                 } else null
 
@@ -132,15 +134,15 @@ fun Application.server() {
         route("/api") {
             webSocket("/websocket") {
                 try {
-                    val authFrame = incoming.receive() as Frame.Text
-                    val user = sessions.check(authFrame.readText())
+                    val sessionId = (incoming.receive() as Frame.Text).readText()
+                    val user = sessions.check(sessionId)
                     if (user == null) {
                         outgoing.send(Frame.Text("Unauthenticated"))
                         close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Unauthenticated"))
                         return@webSocket
                     } else {
                         log.debug("Adding user ${user.id} to message broker")
-                        MessageBroker.add(this, user)
+                        MessageBroker.add(this, user, sessionId)
                         outgoing.send(Frame.Text("Authenticated"))
                     }
                     incoming.receiveOrNull()

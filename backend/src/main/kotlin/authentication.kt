@@ -8,7 +8,8 @@ import io.ktor.request.header
 import io.ktor.response.respond
 
 class AscientPrincipal(
-    val user: UserDBO
+    val user: UserDBO,
+    val sessionId: String? = null
 ) : Principal
 
 class AscientAuthenticationProvider(name: String?) : AuthenticationProvider(name) {

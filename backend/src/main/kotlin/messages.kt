@@ -1,6 +1,5 @@
 package us.kesslern.ascient
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.http.cio.websocket.WebSocketSession
 import io.ktor.http.cio.websocket.send
 import kotlinx.coroutines.GlobalScope
@@ -11,17 +10,17 @@ import kotlin.concurrent.schedule
 
 data class ActiveWebSocket(
         val session: WebSocketSession,
-        val user: UserDBO
+        val user: UserDBO,
+        val sessionId: String
 )
 
 data class Event (
         val userId: Int,
-        val entity: Any
+        val entity: Any,
+        val originatingSessionId: String?
 )
 
-data class WebSocketTransport(
-        val userId: Int,
-        @JsonProperty("type")
+data class WebSocketMessage(
         val type: String,
         val entity: Any
 )
@@ -32,25 +31,33 @@ object MessageBroker {
 
     init {
         Timer().schedule(
-                3000, 3000
+                10000, 10000
         ) {
             logger.info("Current websockets: ${websockets.size}")
         }
     }
 
-    fun add(session: WebSocketSession, user: UserDBO) = websockets.add(ActiveWebSocket(session, user))
+    fun add(
+            session: WebSocketSession,
+            user: UserDBO,
+            sessionId: String
+    ) = websockets.add(ActiveWebSocket(session, user, sessionId))
 
     fun remove(session: WebSocketSession) = websockets.removeIf { it.session == session }
 
     fun dispatch(event: Event) {
-        val transport = WebSocketTransport(
-                userId = event.userId,
+        val transport = WebSocketMessage(
                 type = event.entity.javaClass.simpleName,
                 entity = event.entity
         )
-        log.info(objectMapper?.writeValueAsString(transport) ?: "")
-        websockets.filter { it.user.id == event.userId }.forEach { webSocket ->
-            GlobalScope.launch { webSocket.session.send(objectMapper?.writeValueAsString(transport) ?: "") }
-        }
+
+        websockets
+                .filter {
+                    it.user.id == event.userId && it.sessionId != event.originatingSessionId
+                }.forEach { webSocket ->
+                    GlobalScope.launch {
+                        webSocket.session.send(objectMapper?.writeValueAsString(transport) ?: "")
+                    }
+                }
     }
 }
