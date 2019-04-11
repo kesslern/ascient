@@ -1,12 +1,31 @@
-function websocketStuff(sessionId) {
-  window.socket = new WebSocket(`ws://${ window.location.host }/api/websocket`)
-  window.socket.addEventListener('open', () => {
-    window.socket.send(sessionId)
-  })
-}
+import { store } from './index.js'
+import { actions } from './state/websocket'
 
 class Api {
   sessionId = null
+  webSocket = null
+
+  initWebSocket() {
+    this.socket = new WebSocket(`ws://${ window.location.host }/api/websocket`)
+    this.socket.onmessage = this.verifyWebSocketAuth
+    this.socket.onopen = () => {
+      this.socket.send(this.sessionId)
+    }
+  }
+
+  verifyWebSocketAuth = event => {
+    if (event.data === 'Authenticated') {
+      this.socket.onmessage = this.processWebSocketMessage
+    } else {
+      throw Error('Websocket auth failed')
+    }
+  }
+
+  processWebSocketMessage = event => {
+    console.log('Another message:')
+    console.log(event.data)
+    store.dispatch(actions.update(JSON.parse(event.data)))
+  }
 
   async authenticate(username, password) {
     const response = await fetch(
@@ -16,7 +35,7 @@ class Api {
     if (response.ok) {
       const body = JSON.parse(await response.text())
       this.sessionId = body.sessionId
-      websocketStuff(body.sessionId)
+      this.initWebSocket()
       return body
     }
     throw Error('unauthenticated')
