@@ -20,9 +20,13 @@ export const booleanEntities = createReducer({}, {
     const boolean = action.payload
     state[boolean.id] = boolean
   },
-  [webSocketActions.update]: (state, action) => {
+  [webSocketActions.set]: (state, action) => {
     const boolean = action.payload.entity
     state[boolean.id] = boolean
+  },
+  [webSocketActions.delete]: (state, action) => {
+    const id = action.payload.entity
+    delete state[id]
   }
 })
 

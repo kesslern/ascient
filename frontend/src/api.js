@@ -22,9 +22,12 @@ class Api {
   }
 
   processWebSocketMessage = event => {
-    console.log('Another message:')
-    console.log(event.data)
-    store.dispatch(actions.update(JSON.parse(event.data)))
+    const data = JSON.parse(event.data)
+    if (data.action === 'SET') {
+      store.dispatch(actions.set(data))
+    } else {
+      store.dispatch(actions.delete(data))
+    }
   }
 
   async authenticate(username, password) {

@@ -3,7 +3,8 @@ import { createAction } from 'redux-starter-kit'
 const namespace = 'ascient/websocket'
 
 const actions = {
-  update: createAction(`${ namespace }/update`)
+  set: createAction(`${ namespace }/set`),
+  delete: createAction(`${ namespace }/delete`)
 }
 
 export { actions }

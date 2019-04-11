@@ -6,7 +6,6 @@ import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -86,6 +85,7 @@ fun Route.booleanRoutes() {
             }
 
             post {
+                val principal = call.principal<AscientPrincipal>()!!
                 val newName = call.request.queryParameters["name"] ?: throw MissingParam("name")
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
@@ -93,6 +93,7 @@ fun Route.booleanRoutes() {
 
                 val boolean = BooleansDAO.insert(newName, newValue)
 
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
                 call.respond(boolean)
             }
 
@@ -112,13 +113,15 @@ fun Route.booleanRoutes() {
 
                 val boolean = BooleansDAO.update(id, newValue)
 
-                MessageBroker.dispatch(Event(principal.user.id, boolean, principal.sessionId))
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
                 call.respond(boolean)
             }
 
             delete("/{id}") {
+                val principal = call.principal<AscientPrincipal>()!!
                 val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
                 BooleansDAO.delete(id)
+                MessageBroker.dispatch(Event(principal, "DELETE", id))
                 call.respond(HttpStatusCode.NoContent)
             }
         }

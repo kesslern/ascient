@@ -16,12 +16,20 @@ data class ActiveWebSocket(
 
 data class Event (
         val userId: Int,
+        val action: String,
         val entity: Any,
         val originatingSessionId: String?
-)
+) {
+    constructor(
+            principal: AscientPrincipal,
+            action: String,
+            entity: Any
+    ) : this(principal.user.id, action, entity, principal.sessionId)
+}
 
 data class WebSocketMessage(
         val type: String,
+        val action: String,
         val entity: Any
 )
 
@@ -47,6 +55,7 @@ object MessageBroker {
 
     fun dispatch(event: Event) {
         val transport = WebSocketMessage(
+                action = event.action,
                 type = event.entity.javaClass.simpleName,
                 entity = event.entity
         )
