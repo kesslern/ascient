@@ -32,6 +32,7 @@ dependencies {
     compile("io.ktor:ktor-auth:${Versions.ktor}")
     compile("io.ktor:ktor-jackson:${Versions.ktor}")
     compile("io.ktor:ktor-server-netty:${Versions.ktor}")
+    compile("io.ktor:ktor-websockets:${Versions.ktor}")
     compile("org.flywaydb:flyway-core:${Versions.flyway}")
     compile("org.jetbrains.exposed:exposed:${Versions.exposed}")
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}")

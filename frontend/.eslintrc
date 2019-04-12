@@ -13,6 +13,7 @@
     "no-confusing-arrow": 0,
     "filenames/match-regex": 0,
     "no-invalid-this": 0,
+    "id-blacklist": 0,
     "id-length": [2, { "exceptions": ["it"] } ], 
     "func-style": [2, "declaration",  { "allowArrowFunctions": true }],
     "babel/new-cap": 2,

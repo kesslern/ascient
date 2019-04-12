@@ -84,18 +84,20 @@ fun Route.booleanRoutes() {
             }
 
             post {
-                val newName = call.request.queryParameters["name"] ?: throw MissingParam("name")
+                val principal = call.ascientPrincipal()
+                val newName = call.requiredQueryParam("name")
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
                 if (newName.isEmpty()) { throw MissingParam("name") }
 
                 val boolean = BooleansDAO.insert(newName, newValue)
 
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
                 call.respond(boolean)
             }
 
             get("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                val id = call.pathIntParam("id")
                 try {
                     call.respond(BooleansDAO.get(id))
                 } catch (e: NoSuchElementException) {
@@ -104,15 +106,21 @@ fun Route.booleanRoutes() {
             }
 
             put("/{id}") {
-                val id = call.parameters["id"]?.toInt()!!
-                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+                val principal = call.ascientPrincipal()
+                val id = call.pathIntParam("id")
+                val newValue = call.requiredQueryParam("value").toBoolean()
 
-                call.respond(BooleansDAO.update(id, newValue))
+                val boolean = BooleansDAO.update(id, newValue)
+
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
+                call.respond(boolean)
             }
 
             delete("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                val principal = call.ascientPrincipal()
+                val id = call.pathIntParam("id")
                 BooleansDAO.delete(id)
+                MessageBroker.dispatch(Event(principal, "DELETE", id))
                 call.respond(HttpStatusCode.NoContent)
             }
         }

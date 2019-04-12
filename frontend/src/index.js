@@ -43,3 +43,5 @@ if (module.hot) {
     render(NextApp)
   })
 }
+
+export { store }
