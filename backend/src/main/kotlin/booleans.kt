@@ -2,7 +2,6 @@ package us.kesslern.ascient
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
-import io.ktor.auth.principal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -85,8 +84,8 @@ fun Route.booleanRoutes() {
             }
 
             post {
-                val principal = call.principal<AscientPrincipal>()!!
-                val newName = call.request.queryParameters["name"] ?: throw MissingParam("name")
+                val principal = call.ascientPrincipal()
+                val newName = call.requiredQueryParam("name")
                 val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
 
                 if (newName.isEmpty()) { throw MissingParam("name") }
@@ -98,7 +97,7 @@ fun Route.booleanRoutes() {
             }
 
             get("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                val id = call.pathIntParam("id")
                 try {
                     call.respond(BooleansDAO.get(id))
                 } catch (e: NoSuchElementException) {
@@ -107,9 +106,9 @@ fun Route.booleanRoutes() {
             }
 
             put("/{id}") {
-                val principal = call.principal<AscientPrincipal>()!!
-                val id = call.parameters["id"]?.toInt()!!
-                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: throw MissingParam("value")
+                val principal = call.ascientPrincipal()
+                val id = call.pathIntParam("id")
+                val newValue = call.requiredQueryParam("value").toBoolean()
 
                 val boolean = BooleansDAO.update(id, newValue)
 
@@ -118,8 +117,8 @@ fun Route.booleanRoutes() {
             }
 
             delete("/{id}") {
-                val principal = call.principal<AscientPrincipal>()!!
-                val id = call.parameters["id"]?.toInt() ?: throw MissingParam("id")
+                val principal = call.ascientPrincipal()
+                val id = call.pathIntParam("id")
                 BooleansDAO.delete(id)
                 MessageBroker.dispatch(Event(principal, "DELETE", id))
                 call.respond(HttpStatusCode.NoContent)

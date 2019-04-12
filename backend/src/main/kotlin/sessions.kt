@@ -3,22 +3,13 @@ package us.kesslern.ascient
 import mu.KotlinLogging
 import java.util.*
 
-class SessionExistsException(id: String) : Exception() {
-    private val logger = KotlinLogging.logger {}
-
-    init {
-        logger.info("Session already exists with ID: $id")
-    }
-}
-
-data class AscientSession(
+class AscientSession(
         val id: String,
         val user: UserDBO,
         var lastActive: Date = Date()
 )
 
 fun MutableList<AscientSession>.findById(id: String) = this.find { it.id == id }
-
 
 class AscientSessions(
         /**

@@ -4,7 +4,6 @@ import io.ktor.http.cio.websocket.WebSocketSession
 import io.ktor.http.cio.websocket.send
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -34,12 +33,11 @@ data class WebSocketMessage(
 )
 
 object MessageBroker {
-    val log = KotlinLogging.logger {}
     private val websockets = mutableListOf<ActiveWebSocket>()
 
     init {
         Timer().schedule(
-                10000, 10000
+                60000, 60000
         ) {
             logger.info("Current websockets: ${websockets.size}")
         }
@@ -65,7 +63,7 @@ object MessageBroker {
                     it.user.id == event.userId && it.sessionId != event.originatingSessionId
                 }.forEach { webSocket ->
                     GlobalScope.launch {
-                        webSocket.session.send(objectMapper?.writeValueAsString(transport) ?: "")
+                        webSocket.session.send(objectMapper.writeValueAsString(transport))
                     }
                 }
     }

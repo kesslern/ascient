@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.principal
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -80,7 +82,7 @@ fun main() {
     }.start(wait = true)
 }
 
-var objectMapper: ObjectMapper? = null
+var objectMapper = ObjectMapper()
 
 @UseExperimental(ObsoleteCoroutinesApi::class)
 fun Application.server() {
@@ -133,20 +135,24 @@ fun Application.server() {
     routing {
         route("/api") {
             webSocket("/websocket") {
+                val sessionId = (incoming.receive() as Frame.Text).readText()
                 try {
-                    val sessionId = (incoming.receive() as Frame.Text).readText()
                     val user = sessions.check(sessionId)
                     if (user == null) {
+                        log.info("Unable to verify webSocket session $sessionId")
                         outgoing.send(Frame.Text("Unauthenticated"))
                         close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Unauthenticated"))
                         return@webSocket
                     } else {
-                        log.debug("Adding user ${user.id} to message broker")
+                        log.info("Adding user ${user.id} to message broker")
                         MessageBroker.add(this, user, sessionId)
                         outgoing.send(Frame.Text("Authenticated"))
                     }
+
+                    // Keep running until the connection ends
                     incoming.receiveOrNull()
                 } finally {
+                    log.info("Closing webSocket session $sessionId")
                     MessageBroker.remove(this)
                 }
             }
@@ -157,3 +163,7 @@ fun Application.server() {
 }
 
 class MissingParam(name: String) : IllegalArgumentException("Missing parameter: $name")
+
+fun ApplicationCall.ascientPrincipal(): AscientPrincipal =this.principal()!!
+fun ApplicationCall.pathIntParam(name: String): Int = this.parameters[name]!!.toInt()
+fun ApplicationCall.requiredQueryParam(name: String): String = this.parameters[name] ?: throw MissingParam(name)
