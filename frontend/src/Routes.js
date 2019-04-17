@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 
 import AppContainer from './AppContainer'
 import BooleansContainer from './BooleansContainer'
+import { CssBaseline } from '@material-ui/core'
 
 const PrivateRoute = ({ authenticated, component: Component, ...rest }) => (
   <Route {...rest} render={props => (
@@ -23,14 +24,17 @@ class Routes extends Component {
     const { authenticated } = this.props
 
     return (
-      <Switch>"
-        <Route exact path="/" component={AppContainer} />
-        <PrivateRoute
-          authenticated={authenticated}
-          exact path="/booleans"
-          component={BooleansContainer} /> :
-        <Redirect to="/"/>
-      </Switch>
+      <React.Fragment>
+        <CssBaseline/>
+        <Switch>
+          <Route exact path="/" component={AppContainer} />
+          <PrivateRoute
+            authenticated={authenticated}
+            exact path="/booleans"
+            component={BooleansContainer} /> :
+          <Redirect to="/"/>
+        </Switch>
+      </React.Fragment>
     )
   }
 }
