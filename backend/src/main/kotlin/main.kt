@@ -40,6 +40,8 @@ val sessions = AscientSessions(Environment.sessionLength)
 val logger = KotlinLogging.logger {}
 
 fun main() {
+
+
     while (true) {
         try {
             Flyway
@@ -76,7 +78,7 @@ fun main() {
 
     embeddedServer(
             Netty,
-            port = Environment.databasePort
+            port = Environment.ascientPort
     ) {
         server()
     }.start(wait = true)

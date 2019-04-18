@@ -16,4 +16,10 @@ COPY --from=builder /dist /app
 
 EXPOSE 8080
 
-CMD ["bash", "-c", "JAVA_OPTS='-Ddatabase.connection=${DB_CONNECTION} -Ddatabase.username=${DB_USERNAME} -Ddatabase.password=${DB_PASSWORD}' /app/ascient/bin/ascient"]
+CMD ["bash", "-c", "JAVA_OPTS='\
+ -Ddatabase.username=${DB_USERNAME}\
+ -Ddatabase.password=${DB_PASSWORD}\
+ -Ddatabase.hostname=${DB_HOSTNAME}\
+ -Ddatabase.port=${DB_PORT}\
+ -Ddatabase.dbname=${DB_NAME}\
+' /app/ascient/bin/ascient"]

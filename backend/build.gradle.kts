@@ -51,12 +51,18 @@ application {
     group = "us.kesslern"
     applicationName = "ascient"
 
-    // TODO: Make these configurable
-    applicationDefaultJvmArgs = listOf(
-        "-Ddatabase.connection=jdbc:postgresql://localhost:5432/postgres",
-        "-Ddatabase.username=user",
-        "-Ddatabase.password=pass"
-    )
+    applicationDefaultJvmArgs = mapOf(
+            "database.hostname" to "localhost",
+            "database.port"     to "5432",
+            "database.dbname"   to "postgres",
+            "database.username" to "user",
+            "database.password" to "pass",
+            "ascient.port"      to "8080"
+    ).map {
+        it.key to System.getProperty(it.key, it.value)
+    }.map {
+        "-D${it.first}=${it.second}"
+    }
 }
 
 val test by tasks.getting(Test::class) {
