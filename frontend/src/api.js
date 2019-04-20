@@ -1,5 +1,6 @@
 import { store } from './index.js'
 import { actions } from './state/websocket'
+import axios from 'axios'
 
 class Api {
   sessionId = null
@@ -31,24 +32,13 @@ class Api {
   }
 
   async authenticate(username, password) {
-    const response = await fetch(
-      `/api/users/authenticate?username=${ username }&password=${ password }`,
-      { method: 'POST' }
+    const response = await axios.post(
+      `/api/users/authenticate?username=${ username }&password=${ password }`
     )
-    if (response.ok) {
-      const body = JSON.parse(await response.text())
-      this.sessionId = body.sessionId
-      this.initWebSocket()
-      return body
-    }
-    throw Error('unauthenticated')
-  }
-
-  async request(path, config) {
-    config = config ? config : {}
-    config.headers = { 'X-AscientSession': this.sessionId }
-    const response = await fetch(path, config)
-    return response.text()
+    this.sessionId = response.data.sessionId
+    axios.defaults.headers.common['X-AscientSession'] = this.sessionId
+    this.initWebSocket()
+    return response.data
   }
 }
 
