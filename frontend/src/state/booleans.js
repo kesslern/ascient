@@ -1,5 +1,5 @@
 import { createAction, createReducer } from 'redux-starter-kit'
-import api from '../api'
+import axios from 'axios'
 import { actions as webSocketActions } from './websocket'
 
 const namespace = 'ascient/booleans'
@@ -32,7 +32,7 @@ export const booleanEntities = createReducer({}, {
 
 export function doRetrieveBooleans() {
   return async dispatch => {
-    const booleans = JSON.parse(await api.request('/api/booleans'))
+    const { data: booleans } = await axios.get('/api/booleans')
     const normalizedBooleans = booleans.reduce((acc, current) => {
       acc[current.id] = current
       return acc
@@ -43,23 +43,21 @@ export function doRetrieveBooleans() {
 
 export function doSetBoolean(id, value) {
   return async dispatch => {
-    const result = await api.request(`/api/booleans/${ id }?value=${ value }`, { method: 'PUT' })
-    const updatedBoolean = JSON.parse(result)
+    const { data: updatedBoolean } = await axios.put(`/api/booleans/${ id }?value=${ value }`)
     dispatch(actions.update(updatedBoolean))
   }
 }
 
 export function doCreateBoolean(name) {
   return async dispatch => {
-    const result = await api.request(`/api/booleans?name=${ name }`, { method: 'POST' })
-    const updatedBoolean = JSON.parse(result)
+    const { data: updatedBoolean } = await axios.post(`/api/booleans?name=${ name }`)
     dispatch(actions.update(updatedBoolean))
   }
 }
 
 export function doDeleteBoolean(id) {
   return dispatch => {
-    api.request(`/api/booleans/${ id }`, { method: 'DELETE' })
+    axios.delete(`/api/booleans/${ id }`)
     dispatch(actions.delete(id))
   }
 }
