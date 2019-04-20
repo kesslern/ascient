@@ -1,7 +1,7 @@
 import { createAction, createReducer } from 'redux-starter-kit'
 import api from '../api'
 
-const namespace = 'ascient-ui/authentication'
+const namespace = 'ascient-frontend/authentication'
 
 export const actions = {
   authenticate: createAction(`${ namespace }/authenticate`)
