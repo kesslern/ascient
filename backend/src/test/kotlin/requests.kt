@@ -1,6 +1,8 @@
 package us.kesslern.ascient
 
 import io.ktor.http.HttpMethod
+import requests.BooleanCreateParams
+import requests.BooleanUpdateParams
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -46,7 +48,7 @@ fun deleteBoolean(
         id: Int,
         authenticated: Boolean = true,
         sessionId: String? = null,
-        handler: UnifiedResponse.() -> Unit
+        handler: UnifiedResponse.() -> Unit = {}
 ) {
     contract {
         callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
@@ -62,7 +64,11 @@ fun updateBoolean(
         sessionId: String? = null,
         handler: UnifiedResponse.() -> Unit
 ) {
-    request(HttpMethod.Put, "/api/booleans/$id${if (value !== null) "?value=$value" else ""}", authenticated, sessionId, handler)
+    contract {
+        callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+    }
+    val params = BooleanUpdateParams(value = value?.toString())
+    request(HttpMethod.Put, "/api/booleans/$id$params", authenticated, sessionId, handler)
 }
 
 @ExperimentalContracts
@@ -88,9 +94,13 @@ fun createBoolean(
     contract {
         callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
     }
+    val params = BooleanCreateParams(
+        name = name,
+        value = value?.toString()
+    )
     request(
             HttpMethod.Post,
-            "/api/booleans?name=${name ?: ""}${if (value != null) "&value=$value" else ""}",
+            "/api/booleans$params",
             authenticated,
             sessionId,
             handler

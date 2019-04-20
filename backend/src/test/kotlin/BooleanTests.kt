@@ -1,10 +1,6 @@
 package us.kesslern.ascient
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.HttpStatusCode
-import org.joda.time.DateTime
-import org.joda.time.Seconds.THREE
-import org.joda.time.Seconds.secondsBetween
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.*
@@ -118,6 +114,6 @@ class BooleanTests {
 
         block(id)
 
-        deleteBoolean(id) { }
+        deleteBoolean(id)
     }
 }
