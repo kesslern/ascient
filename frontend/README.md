@@ -1,10 +1,10 @@
-# ascient-ui
+# ascient-frontend
 The frontend for ascient, providing a React UI for accessing ascient-backend. 
 
 ## Getting Started
 
 ### Prerequisites
-Ascient-ui requires a recent version of Yarn and NodeJS. Install dependencies before running:
+Ascient-frontend requires a recent version of Yarn and NodeJS. Install dependencies before running:
 ```shell
 yarn install
 ```
