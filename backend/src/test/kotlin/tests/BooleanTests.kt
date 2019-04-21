@@ -1,9 +1,12 @@
-package us.kesslern.ascient
+package us.kesslern.ascient.tests
 
 import io.ktor.http.HttpStatusCode
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import requests.*
+import us.kesslern.ascient.BooleanDBO
+import us.kesslern.ascient.TestContext
+import us.kesslern.ascient.readJson
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.*

@@ -11,7 +11,7 @@ object Versions {
     const val ktor              = "1.1.2"
     const val jackson           = "2.9.+"
     const val jbcrypt           = "0.4"
-    const val junit             = "5.1.+"
+    const val junit             = "5.4.2"
     const val jvm               =  1.8
     const val kotlinLogging     = "1.6.22"
     const val logback           = "1.2.+"
@@ -41,9 +41,11 @@ dependencies {
     compile("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
 
     testCompile("org.testcontainers:postgresql:${Versions.postgresContainer}")
-    testCompile("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
     testCompile("io.ktor:ktor-client-apache:${Versions.ktor}")
     testCompile("io.ktor:ktor-server-test-host:${Versions.ktor}")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
 }
 
 application {
@@ -65,6 +67,14 @@ application {
     }
 }
 
-tasks.test {
-    systemProperty("ascient.backend", System.getProperty("ascient.backend"))
+tasks.named<Test>("test") {
+    val backend = System.getProperty("ascient.backend", "")
+    val freshDatabase = System.getProperty("ascient.freshDatabase")?.toBoolean() ?: false
+
+    useJUnitPlatform {
+        if (backend.isNotEmpty() && !freshDatabase) {
+            excludeTags("freshDatabaseOnly")
+        }
+    }
+    systemProperty("ascient.backend", backend)
 }
