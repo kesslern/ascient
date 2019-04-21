@@ -1,9 +1,13 @@
-package us.kesslern.ascient
+package us.kesslern.ascient.tests
 
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import org.junit.Test
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import us.kesslern.ascient.AuthenticationResponse
+import us.kesslern.ascient.readJson
+import us.kesslern.ascient.request
 import us.kesslern.ascient.requests.authenticateUser
 import us.kesslern.ascient.requests.createUser
 import java.time.Instant
@@ -16,6 +20,7 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserTests {
     @Test
+    @Tag("freshDatabaseOnly")
     fun `verify admin user password must be changed flag`() {
         var sessionId: String
         authenticateUser("admin", "password") {

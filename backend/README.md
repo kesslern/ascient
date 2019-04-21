@@ -23,6 +23,8 @@ The tests can also run against a running backend. This is useful for testing dep
 ./gradlew test -Dascient.backend=http://localhost:8080
 ```
 
+Some tests require a fresh database. When running against a real backend, it is assumed the database is not untouched, so these tests are excluded. To run these tests against a fresh database, use the option `-Dascient.freshDatabase=true`.
+
 ## Deployment
 A production bundle can be built with the `build` task.
 ```shell
