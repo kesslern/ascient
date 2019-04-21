@@ -65,6 +65,6 @@ application {
     }
 }
 
-val test by tasks.getting(Test::class) {
+tasks.test {
     systemProperty("ascient.backend", System.getProperty("ascient.backend"))
 }
