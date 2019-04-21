@@ -71,7 +71,7 @@ class BooleanTests {
 
     @Test
     fun `test default parameters`() {
-        insertBoolean(UUID.randomUUID().toString()) { id ->
+        insertBoolean { id ->
             // Verify inserted with value True
             getBoolean(id) {
                 val newBoolean = mapper.readValue(content, BooleanDBO::class.java)
@@ -96,7 +96,7 @@ class BooleanTests {
             assertEquals(HttpStatusCode.BadRequest, status)
         }
 
-        insertBoolean(UUID.randomUUID().toString()) { id ->
+        insertBoolean { id ->
             updateBoolean(id, null) {
                 assertEquals("Missing parameter: value", content)
                 assertEquals(HttpStatusCode.BadRequest, status)
@@ -104,15 +104,16 @@ class BooleanTests {
         }
     }
 
-    private fun insertBoolean(name: String, value: Boolean? = null, block: (id: Int) -> Unit) {
-
+    private fun insertBoolean(name: String = UUID.randomUUID().toString(),
+                              value: Boolean? = null,
+                              handler: (id: Int) -> Unit) {
         var id: Int
         createBoolean(name, value) {
             val boolean: BooleanDBO = readJson(content)
             id = boolean.id
         }
 
-        block(id)
+        handler(id)
 
         deleteBoolean(id)
     }
