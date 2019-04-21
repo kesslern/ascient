@@ -4,6 +4,8 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import us.kesslern.ascient.requests.authenticateUser
+import us.kesslern.ascient.requests.createUser
 import java.time.Instant
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.assertEquals
@@ -37,7 +39,7 @@ class UserTests {
     @Test
     fun `create and authenticate as a new user`() {
         val username = "user${Instant.now().toEpochMilli()}"
-        newUser(username, "password") {
+        createUser(username, "password") {
             assertEquals(HttpStatusCode.NoContent, status)
         }
 

@@ -5,9 +5,9 @@ import io.ktor.http.HttpStatusCode
 import mu.KotlinLogging
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import us.kesslern.ascient.requests.authenticateUser
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @ExperimentalContracts
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
