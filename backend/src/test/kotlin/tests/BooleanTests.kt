@@ -3,6 +3,7 @@ package us.kesslern.ascient
 import io.ktor.http.HttpStatusCode
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import requests.*
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.*
@@ -102,19 +103,5 @@ class BooleanTests {
                 assertEquals(HttpStatusCode.BadRequest, status)
             }
         }
-    }
-
-    private fun insertBoolean(name: String = UUID.randomUUID().toString(),
-                              value: Boolean? = null,
-                              handler: (id: Int) -> Unit) {
-        var id: Int
-        createBoolean(name, value) {
-            val boolean: BooleanDBO = readJson(content)
-            id = boolean.id
-        }
-
-        handler(id)
-
-        deleteBoolean(id)
     }
 }
