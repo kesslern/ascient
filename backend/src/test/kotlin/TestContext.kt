@@ -9,18 +9,23 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.call.call
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.header
 import io.ktor.client.response.readText
+import io.ktor.content.TextContent
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import kotlinx.coroutines.runBlocking
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.testcontainers.containers.PostgreSQLContainer
-import java.lang.RuntimeException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -36,10 +41,14 @@ data class UnifiedResponse(
 object TestContext {
     val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule()).registerModule(JodaModule())
 
-    const val databaseDriver = "org.postgresql.Driver"
-    const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
+    private const val databaseDriver = "org.postgresql.Driver"
+    private const val databaseConnection = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_DAEMON=true"
 
-    val client = HttpClient(Apache)
+    val client = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = GsonSerializer()
+        }
+    }
     var backend: String = System.getProperty("ascient.backend", "")
     var useRealBackend = !backend.isEmpty()
 
@@ -61,10 +70,13 @@ inline fun <reified T> readJson(content: String?): T {
     return TestContext.mapper.readValue(content)
 }
 
+inline fun Any.toJson(): String = TestContext.mapper.writeValueAsString(this)
+
 @ExperimentalContracts
 fun request(
         method: HttpMethod,
         uri: String,
+        body: Any? = null,
         authenticated: Boolean = true,
         sessionId: String? = null,
         handler: (UnifiedResponse.() -> Unit)
@@ -73,7 +85,7 @@ fun request(
         callsInPlace(handler, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
     }
 
-    val response = request(method, uri, authenticated, sessionId)
+    val response = request(method, uri, body, authenticated, sessionId)
     response.let(handler)
     return response
 }
@@ -81,6 +93,7 @@ fun request(
 fun request(
         method: HttpMethod,
         uri: String,
+        body: Any? = null,
         authenticated: Boolean = true,
         sessionId: String? = null
 ): UnifiedResponse {
@@ -90,15 +103,16 @@ fun request(
         headers.add(Header("X-AscientPassword", "password"))
     }
     if (sessionId !== null) headers.add(Header("X-AscientSession", sessionId))
+    val json = body?.toJson()
 
     return if (TestContext.useRealBackend) {
         runBlocking {
-            with(requestWithBackend(method, TestContext.backend + uri, headers)) {
+            with(requestWithBackend(method, TestContext.backend + uri, json, headers)) {
                 UnifiedResponse(response.status, response.readText())
             }
         }
     } else {
-        with(requestWithMockKtor(method, uri, headers)) {
+        with(requestWithMockKtor(method, uri, json, headers)) {
             UnifiedResponse(response.status(), response.content)
         }
     }
@@ -107,19 +121,28 @@ fun request(
 private fun requestWithMockKtor(
         method: HttpMethod,
         uri: String,
+        body: String?,
         headers: List<Header>
 ): TestApplicationCall =
         withTestApplication(Application::server) {
             handleRequest(method, uri) {
                 headers.forEach { addHeader(it.name, it.value) }
+                if (body != null) {
+                    addHeader(HttpHeaders.ContentType, "application/json")
+                    setBody(body)
+                }
             }
         }
 
 private suspend fun requestWithBackend(
         method: HttpMethod,
         uri: String,
+        body: String?,
         headers: List<Header>
 ): HttpClientCall = TestContext.client.call(uri) {
     this.method = method
+    if (body != null) {
+        this.body = TextContent(body, contentType = ContentType.Application.Json)
+    }
     headers.forEach { this.header(it.name, it.value) }
 }

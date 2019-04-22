@@ -3,6 +3,7 @@ package us.kesslern.ascient
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
 import org.jetbrains.exposed.sql.*
@@ -76,6 +77,8 @@ object BooleansDAO {
     }
 }
 
+data class BooleanPutBody(val value: Boolean)
+
 fun Route.booleanRoutes() {
     authenticate {
         route("/booleans") {
@@ -106,11 +109,12 @@ fun Route.booleanRoutes() {
             }
 
             put("/{id}") {
+
                 val principal = call.ascientPrincipal()
                 val id = call.pathIntParam("id")
-                val newValue = call.requiredQueryParam("value").toBoolean()
+                val body = call.receive<BooleanPutBody>()
 
-                val boolean = BooleansDAO.update(id, newValue)
+                val boolean = BooleansDAO.update(id, body.value)
 
                 MessageBroker.dispatch(Event(principal, "SET", boolean))
                 call.respond(boolean)
@@ -126,3 +130,4 @@ fun Route.booleanRoutes() {
         }
     }
 }
+

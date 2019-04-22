@@ -43,7 +43,7 @@ export function doRetrieveBooleans() {
 
 export function doSetBoolean(id, value) {
   return async dispatch => {
-    const { data: updatedBoolean } = await axios.put(`/api/booleans/${ id }?value=${ value }`)
+    const { data: updatedBoolean } = await axios.put(`/api/booleans/${ id }`, { value })
     dispatch(actions.update(updatedBoolean))
   }
 }

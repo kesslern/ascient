@@ -17,8 +17,8 @@ class BooleanCreateParams(
 ) : QueryParamBase()
 
 class BooleanUpdateParams(
-    val value: String? = null
-) : QueryParamBase()
+    val value: Boolean? = null
+)
 
 @ExperimentalContracts
 fun getBoolean(
@@ -30,7 +30,7 @@ fun getBoolean(
     contract {
         callsInPlace(handler, InvocationKind.EXACTLY_ONCE)
     }
-    request(HttpMethod.Get, "/api/booleans/$id", authenticated, sessionId, handler)
+    request(HttpMethod.Get, "/api/booleans/$id", null, authenticated, sessionId, handler)
 }
 
 @ExperimentalContracts
@@ -43,7 +43,7 @@ fun deleteBoolean(
     contract {
         callsInPlace(handler, InvocationKind.EXACTLY_ONCE)
     }
-    request(HttpMethod.Delete, "/api/booleans/$id", authenticated, sessionId, handler)
+    request(HttpMethod.Delete, "/api/booleans/$id", null, authenticated, sessionId, handler)
 }
 
 @ExperimentalContracts
@@ -57,8 +57,8 @@ fun updateBoolean(
     contract {
         callsInPlace(handler, InvocationKind.EXACTLY_ONCE)
     }
-    val params = BooleanUpdateParams(value = value?.toString())
-    request(HttpMethod.Put, "/api/booleans/$id$params", authenticated, sessionId, handler)
+    val params = BooleanUpdateParams(value = value)
+    request(HttpMethod.Put, "/api/booleans/$id", params, authenticated, sessionId, handler)
 }
 
 @ExperimentalContracts
@@ -70,7 +70,7 @@ fun getBooleans(
     contract {
         callsInPlace(handler, InvocationKind.EXACTLY_ONCE)
     }
-    request(HttpMethod.Get, "/api/booleans", authenticated, sessionId, handler)
+    request(HttpMethod.Get, "/api/booleans", null, authenticated, sessionId, handler)
 }
 
 @ExperimentalContracts
@@ -85,15 +85,16 @@ fun createBoolean(
         callsInPlace(handler, InvocationKind.EXACTLY_ONCE)
     }
     val params = BooleanCreateParams(
-        name = name,
-        value = value?.toString()
+            name = name,
+            value = value?.toString()
     )
     request(
         HttpMethod.Post,
-        "/api/booleans$params",
-        authenticated,
-        sessionId,
-        handler
+            "/api/booleans$params",
+            null,
+            authenticated,
+            sessionId,
+            handler
     )
 }
 
