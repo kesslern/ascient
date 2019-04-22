@@ -43,14 +43,14 @@ export function doRetrieveBooleans() {
 
 export function doSetBoolean(id, value) {
   return async dispatch => {
-    const { data: updatedBoolean } = await axios.put(`/api/booleans/${ id }?value=${ value }`)
+    const { data: updatedBoolean } = await axios.put(`/api/booleans/${ id }`, { value })
     dispatch(actions.update(updatedBoolean))
   }
 }
 
 export function doCreateBoolean(name) {
   return async dispatch => {
-    const { data: updatedBoolean } = await axios.post(`/api/booleans?name=${ name }`)
+    const { data: updatedBoolean } = await axios.post('/api/booleans', { name })
     dispatch(actions.update(updatedBoolean))
   }
 }

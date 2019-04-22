@@ -1,5 +1,6 @@
 package us.kesslern.ascient.tests
 
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -7,6 +8,7 @@ import requests.*
 import us.kesslern.ascient.BooleanDBO
 import us.kesslern.ascient.TestContext
 import us.kesslern.ascient.readJson
+import us.kesslern.ascient.request
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.*
@@ -96,13 +98,25 @@ class BooleanTests {
         }
 
         createBoolean(null) {
-            assertEquals("Missing parameter: name", content)
             assertEquals(HttpStatusCode.BadRequest, status)
+            assertEquals("Missing parameter: name", content)
         }
 
         insertBoolean { id ->
             updateBoolean(id, null) {
-                assertEquals("Missing parameter: value", content)
+                assertEquals(HttpStatusCode.BadRequest, status)
+                assertEquals("'null' for field 'value' is invalid", content)
+            }
+        }
+
+        insertBoolean { id ->
+            request(HttpMethod.Put, "/api/booleans/$id", "{}") {
+                assertEquals(HttpStatusCode.BadRequest, status)
+            }
+        }
+
+        insertBoolean { id ->
+            request(HttpMethod.Put, "/api/booleans/$id", "") {
                 assertEquals(HttpStatusCode.BadRequest, status)
             }
         }

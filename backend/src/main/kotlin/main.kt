@@ -1,7 +1,9 @@
 package us.kesslern.ascient
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -98,6 +100,7 @@ fun Application.server() {
         jackson {
             registerModule(JodaModule())
             configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             objectMapper = this
         }
     }
@@ -131,6 +134,15 @@ fun Application.server() {
 
         exception<IllegalArgumentException> {
             call.respond(HttpStatusCode.BadRequest, it.message ?: "")
+        }
+
+        exception<MismatchedInputException> {
+            val message = it.path.map { exception ->
+                "'null' for field '${exception.fieldName}' is invalid"
+            }.fold("") { acc, next ->
+                acc + "$next\n"
+            }.trim()
+            call.respond(HttpStatusCode.BadRequest, message)
         }
     }
 

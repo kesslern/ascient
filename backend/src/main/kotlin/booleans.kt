@@ -3,6 +3,7 @@ package us.kesslern.ascient
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
 import org.jetbrains.exposed.sql.*
@@ -76,24 +77,20 @@ object BooleansDAO {
     }
 }
 
+data class BooleanPutBody(
+        val value: Boolean
+)
+
+data class BooleanPostBody(
+        val name: String?,
+        val value: Boolean?
+)
+
 fun Route.booleanRoutes() {
     authenticate {
         route("/booleans") {
             get {
                 call.respond(BooleansDAO.get())
-            }
-
-            post {
-                val principal = call.ascientPrincipal()
-                val newName = call.requiredQueryParam("name")
-                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
-
-                if (newName.isEmpty()) { throw MissingParam("name") }
-
-                val boolean = BooleansDAO.insert(newName, newValue)
-
-                MessageBroker.dispatch(Event(principal, "SET", boolean))
-                call.respond(boolean)
             }
 
             get("/{id}") {
@@ -105,12 +102,24 @@ fun Route.booleanRoutes() {
                 }
             }
 
+            post {
+                val principal = call.ascientPrincipal()
+                val body = call.receive<BooleanPostBody>()
+                if (body.name?.isEmpty() != false) { throw MissingParam("name") }
+
+                val boolean = BooleansDAO.insert(body.name, body.value ?: true)
+
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
+                call.respond(boolean)
+            }
+
             put("/{id}") {
+
                 val principal = call.ascientPrincipal()
                 val id = call.pathIntParam("id")
-                val newValue = call.requiredQueryParam("value").toBoolean()
+                val body = call.receive<BooleanPutBody>()
 
-                val boolean = BooleansDAO.update(id, newValue)
+                val boolean = BooleansDAO.update(id, body.value)
 
                 MessageBroker.dispatch(Event(principal, "SET", boolean))
                 call.respond(boolean)
@@ -126,3 +135,4 @@ fun Route.booleanRoutes() {
         }
     }
 }
+

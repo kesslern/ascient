@@ -42,6 +42,9 @@ dependencies {
 
     testCompile("org.testcontainers:postgresql:${Versions.postgresContainer}")
     testCompile("io.ktor:ktor-client-apache:${Versions.ktor}")
+    testCompile("io.ktor:ktor-client-core:${Versions.ktor}")
+    testCompile("io.ktor:ktor-client-gson:${Versions.ktor}")
+    testCompile("io.ktor:ktor-client-json:${Versions.ktor}")
     testCompile("io.ktor:ktor-server-test-host:${Versions.ktor}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
