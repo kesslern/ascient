@@ -1,10 +1,10 @@
-package requests
+package us.kesslern.ascient.requests
 
 import io.ktor.http.HttpMethod
 import us.kesslern.ascient.BooleanDBO
-import us.kesslern.ascient.UnifiedResponse
-import us.kesslern.ascient.readJson
-import us.kesslern.ascient.request
+import us.kesslern.ascient.util.UnifiedResponse
+import us.kesslern.ascient.util.readJson
+import us.kesslern.ascient.util.request
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind

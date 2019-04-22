@@ -1,9 +1,9 @@
 package us.kesslern.ascient.requests
 
 import io.ktor.http.HttpMethod
-import us.kesslern.ascient.UnifiedResponse
-import us.kesslern.ascient.request
 import us.kesslern.ascient.util.QueryParamBase
+import us.kesslern.ascient.util.UnifiedResponse
+import us.kesslern.ascient.util.request
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

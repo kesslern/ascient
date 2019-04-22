@@ -4,11 +4,11 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import requests.*
 import us.kesslern.ascient.BooleanDBO
 import us.kesslern.ascient.TestContext
-import us.kesslern.ascient.readJson
-import us.kesslern.ascient.request
+import us.kesslern.ascient.requests.*
+import us.kesslern.ascient.util.readJson
+import us.kesslern.ascient.util.request
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.*

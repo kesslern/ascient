@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import us.kesslern.ascient.AuthenticationResponse
-import us.kesslern.ascient.readJson
-import us.kesslern.ascient.request
 import us.kesslern.ascient.requests.authenticateUser
 import us.kesslern.ascient.requests.createUser
+import us.kesslern.ascient.util.readJson
+import us.kesslern.ascient.util.request
 import java.time.Instant
 import kotlin.contracts.ExperimentalContracts
 import kotlin.test.assertEquals
