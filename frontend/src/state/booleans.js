@@ -50,7 +50,7 @@ export function doSetBoolean(id, value) {
 
 export function doCreateBoolean(name) {
   return async dispatch => {
-    const { data: updatedBoolean } = await axios.post(`/api/booleans?name=${ name }`)
+    const { data: updatedBoolean } = await axios.post('/api/booleans', { name })
     dispatch(actions.update(updatedBoolean))
   }
 }

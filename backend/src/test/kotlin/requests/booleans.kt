@@ -5,16 +5,15 @@ import us.kesslern.ascient.BooleanDBO
 import us.kesslern.ascient.UnifiedResponse
 import us.kesslern.ascient.readJson
 import us.kesslern.ascient.request
-import us.kesslern.ascient.util.QueryParamBase
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 class BooleanCreateParams(
-    val name: String? = null,
-    val value: String? = null
-) : QueryParamBase()
+    val name: String?,
+    val value: Boolean?
+)
 
 class BooleanUpdateParams(
     val value: Boolean? = null
@@ -86,12 +85,12 @@ fun createBoolean(
     }
     val params = BooleanCreateParams(
             name = name,
-            value = value?.toString()
+            value = value
     )
     request(
         HttpMethod.Post,
-            "/api/booleans$params",
-            null,
+            "/api/booleans",
+            params,
             authenticated,
             sessionId,
             handler

@@ -77,26 +77,20 @@ object BooleansDAO {
     }
 }
 
-data class BooleanPutBody(val value: Boolean)
+data class BooleanPutBody(
+        val value: Boolean
+)
+
+data class BooleanPostBody(
+        val name: String?,
+        val value: Boolean?
+)
 
 fun Route.booleanRoutes() {
     authenticate {
         route("/booleans") {
             get {
                 call.respond(BooleansDAO.get())
-            }
-
-            post {
-                val principal = call.ascientPrincipal()
-                val newName = call.requiredQueryParam("name")
-                val newValue = call.request.queryParameters["value"]?.toBoolean() ?: true
-
-                if (newName.isEmpty()) { throw MissingParam("name") }
-
-                val boolean = BooleansDAO.insert(newName, newValue)
-
-                MessageBroker.dispatch(Event(principal, "SET", boolean))
-                call.respond(boolean)
             }
 
             get("/{id}") {
@@ -106,6 +100,17 @@ fun Route.booleanRoutes() {
                 } catch (e: NoSuchElementException) {
                     throw IllegalArgumentException("Cannot locate boolean with ID $id")
                 }
+            }
+
+            post {
+                val principal = call.ascientPrincipal()
+                val body = call.receive<BooleanPostBody>()
+                if (body.name?.isEmpty() != false) { throw MissingParam("name") }
+
+                val boolean = BooleansDAO.insert(body.name, body.value ?: true)
+
+                MessageBroker.dispatch(Event(principal, "SET", boolean))
+                call.respond(boolean)
             }
 
             put("/{id}") {
